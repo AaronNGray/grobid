@@ -145,7 +145,7 @@ public class ProcessEngine implements Closeable {
             if (pGbdArgs.getTeiCoordinates()) {
                 elementCoordinates = Arrays.asList("figure", "persName", "ref", "biblStruct", "formula", "s");
             }
-            processFullTextDirectory(files, pGbdArgs, pGbdArgs.getPath2Output(), pGbdArgs.getSaveAssets(), 
+            processFullTextDirectory(files, pGbdArgs, pGbdArgs.getPath2Output(), pGbdArgs.getSaveAssets(),
                 elementCoordinates, pGbdArgs.getSegmentSentences());
             System.out.println(Engine.getCntManager());
         }
@@ -186,7 +186,7 @@ public class ProcessEngine implements Closeable {
                                     .generateTeiCoordinates(elementCoordinates)
                                     .withSentenceSegmentation(segmentSentences)
                                     .build();
-                        result = getEngine().fullTextToTEI(currPdf, config);
+                        result = getEngine().processFulltextDocument /*fullTextToTEI*/(currPdf, config);
                         File outputPathFile = new File(outputPath);
                         if (!outputPathFile.exists()) {
                             outputPathFile.mkdir();
@@ -401,7 +401,7 @@ public class ProcessEngine implements Closeable {
 
     /**
      * Generate blank training data from provided directory of PDF documents, i.e. where TEI files are text only
-     * without tags. This can be used to start from scratch any new model. 
+     * without tags. This can be used to start from scratch any new model.
      *
      * @param pGbdArgs The parameters.
      * @throws Exception

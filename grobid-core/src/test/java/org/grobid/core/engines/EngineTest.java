@@ -946,7 +946,7 @@ public class EngineTest {
             try {
                 Engine.getCntManager().i("PDFS", "INPUT_CNT");
                 System.out.println("Processing: " + f);
-                String tei = engine.fullTextToTEI(f, config);
+                String tei = engine.processFulltextDocument /*fullTextToTEI*/(f, config);
                 System.out.println(tei.length());
             } catch (Exception e) {
                 e.printStackTrace();

@@ -18,6 +18,7 @@ import org.grobid.core.visualization.CitationsVisualizer;
 import org.grobid.core.visualization.FigureTableVisualizer;
 import org.grobid.service.exceptions.GrobidServiceException;
 import org.grobid.service.util.BibTexMediaType;
+import org.grobid.service.util.BibJSONMediaType;
 import org.grobid.service.util.ExpectedResponseType;
 import org.grobid.service.util.GrobidRestUtils;
 import org.slf4j.Logger;
@@ -79,7 +80,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written. ", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             retVal = engine.processHeader(
@@ -162,7 +163,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             GrobidAnalysisConfig config =
@@ -178,7 +179,7 @@ public class GrobidRestProcessFiles {
                     .withSentenceSegmentation(segmentSentences)
                     .build();
 
-            retVal = engine.fullTextToTEI(originFile, config);
+            retVal = engine.processFulltextDocument /*fullTextToTEI*/(originFile, config);
 
             if (GrobidRestUtils.isResultNullOrEmpty(retVal)) {
                 response = Response.status(Response.Status.NO_CONTENT).build();
@@ -253,7 +254,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // set the path for the asset files
             assetPath = GrobidProperties.getTempPath().getPath() + File.separator + KeyGen.getKey();
@@ -272,7 +273,7 @@ public class GrobidRestProcessFiles {
                     .withSentenceSegmentation(segmentSentences)
                     .build();
 
-            retVal = engine.fullTextToTEI(originFile, config);
+            retVal = engine.processFulltextDocument /*fullTextToTEI*/(originFile, config);
 
             if (GrobidRestUtils.isResultNullOrEmpty(retVal)) {
                 response = Response.status(Status.NO_CONTENT).build();
@@ -329,11 +330,11 @@ public class GrobidRestProcessFiles {
         } finally {
             if (originFile != null)
                 IOUtilities.removeTempFile(originFile);
-            
+
             if (assetPath != null) {
                 IOUtilities.removeTempDirectory(assetPath);
             }
-            
+
             if (engine != null) {
                 GrobidPoolingFactory.returnEngine(engine);
             }
@@ -372,7 +373,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             List<PatentItem> patents = new ArrayList<>();
@@ -435,7 +436,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             List<PatentItem> patents = new ArrayList<>();
@@ -461,7 +462,7 @@ public class GrobidRestProcessFiles {
         } finally {
             if (originFile != null)
                 IOUtilities.removeTempFile(originFile);
-            
+
             if (engine != null) {
                 GrobidPoolingFactory.returnEngine(engine);
             }
@@ -502,7 +503,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             List<BibDataSet> bibDataSetList = engine.processReferences(originFile, consolidate);
@@ -594,7 +595,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             out = annotate(
                 originFile, type, engine,
@@ -667,7 +668,7 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             List<String> elementWithCoords = new ArrayList<>();
             elementWithCoords.add("ref");
@@ -693,7 +694,7 @@ public class GrobidRestProcessFiles {
             } else {
                 response = Response.status(Status.NO_CONTENT).build();
             }
-            
+
         } catch (NoSuchElementException nseExp) {
             LOGGER.error("Could not get an engine from the pool within configured time. Sending service unavailable.");
             response = Response.status(Status.SERVICE_UNAVAILABLE).build();
@@ -740,11 +741,11 @@ public class GrobidRestProcessFiles {
                 LOGGER.error("The input file cannot be written.");
                 throw new GrobidServiceException(
                     "The input file cannot be written.", Status.INTERNAL_SERVER_ERROR);
-            } 
+            }
 
             // starts conversion process
             retVal = engine.annotateAllCitationsInPDFPatent(originFile.getAbsolutePath(), consolidate, includeRawCitations);
-                    
+
             if (GrobidRestUtils.isResultNullOrEmpty(retVal)) {
                 response = Response.status(Status.NO_CONTENT).build();
             } else {
@@ -779,7 +780,7 @@ public class GrobidRestProcessFiles {
         return "<< " + GrobidRestProcessFiles.class.getName() + "." + Thread.currentThread().getStackTrace()[1].getMethodName();
     }
 
-    protected PDDocument annotate(File originFile, 
+    protected PDDocument annotate(File originFile,
                                   final GrobidRestUtils.Annotation type, Engine engine,
                                   final int consolidateHeader,
                                   final int consolidateCitations,
@@ -805,12 +806,12 @@ public class GrobidRestProcessFiles {
             .generateTeiCoordinates(elementWithCoords)
             .build();
 
-        DocumentSource documentSource = 
+        DocumentSource documentSource =
             DocumentSource.fromPdf(originFile, config.getStartPage(), config.getEndPage(), true, true, false);
 
         Document teiDoc = engine.fullTextToTEIDoc(documentSource, config);
 
-        documentSource = 
+        documentSource =
             DocumentSource.fromPdf(originFile, config.getStartPage(), config.getEndPage(), true, true, false);
 
         PDDocument document = PDDocument.load(originFile);
@@ -821,7 +822,7 @@ public class GrobidRestProcessFiles {
             throw new RuntimeException("Cannot identify any pages in the input document. " +
                 "The document cannot be annotated. Please check whether the document is valid or the logs.");
         }
-        
+
         documentSource.close(true, true, false);
 
         return outputDocument;

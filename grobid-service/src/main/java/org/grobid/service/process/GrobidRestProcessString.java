@@ -21,6 +21,7 @@ import org.grobid.core.engines.Engine;
 import org.grobid.core.engines.config.GrobidAnalysisConfig;
 import org.grobid.core.factory.GrobidPoolingFactory;
 import org.grobid.service.util.BibTexMediaType;
+import org.grobid.service.util.BibJSONMediaType;
 import org.grobid.service.util.ExpectedResponseType;
 import org.grobid.service.util.GrobidRestUtils;
 //import org.grobid.service.util.GrobidServiceProperties;
@@ -28,9 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Web services consuming String
- * 
+ *
  */
 @Singleton
 public class GrobidRestProcessString {
@@ -44,7 +45,7 @@ public class GrobidRestProcessString {
 
 	/**
 	 * Parse a raw date and return the corresponding normalized date.
-	 * 
+	 *
 	 * @param date raw date string
 	 * @return a response object containing the structured xml representation of
 	 *         the date
@@ -56,7 +57,7 @@ public class GrobidRestProcessString {
 		Engine engine = null;
 		try {
 			LOGGER.debug(">> set raw date for stateless service'...");
-			
+
 			engine = Engine.getEngine(true);
 			date = date.replaceAll("\\n", " ").replaceAll("\\t", " ");
 			List<Date> dates = engine.processDate(date);
@@ -95,7 +96,7 @@ public class GrobidRestProcessString {
 	/**
 	 * Parse a raw sequence of names from a header section and return the
 	 * corresponding normalized authors.
-	 * 
+	 *
 	 * @param names string of the raw sequence of header authors
 	 * @return a response object containing the structured xml representation of
 	 *         the authors
@@ -111,7 +112,7 @@ public class GrobidRestProcessString {
 			engine = Engine.getEngine(true);
 			names = names.replaceAll("\\n", " ").replaceAll("\\t", " ");
 			List<Person> authors = engine.processAuthorsHeader(names);
-			
+
 			if (authors != null) {
 				for(Person person : authors) {
 					if (retVal == null) {
@@ -148,7 +149,7 @@ public class GrobidRestProcessString {
 	/**
 	 * Parse a raw sequence of names from a header section and return the
 	 * corresponding normalized authors.
-	 * 
+	 *
 	 * @param names string of the raw sequence of header authors.
 	 * @return a response object containing the structured xml representation of
 	 *         the authors
@@ -164,7 +165,7 @@ public class GrobidRestProcessString {
 			engine = Engine.getEngine(true);
 			names = names.replaceAll("\\n", " ").replaceAll("\\t", " ");
 			List<Person> authors = engine.processAuthorsCitation(names);
-			
+
 			if (authors != null) {
 				for(Person person : authors) {
 					if (retVal == null) {
@@ -200,7 +201,7 @@ public class GrobidRestProcessString {
 	/**
 	 * Parse a raw sequence of affiliations and return the corresponding
 	 * normalized affiliations with address.
-	 * 
+	 *
 	 * @param affiliation of the raw sequence of affiliation+address
 	 * @return a response object containing the structured xml representation of
 	 *         the affiliation
@@ -217,13 +218,13 @@ public class GrobidRestProcessString {
 			affiliation = affiliation.replaceAll("\\t", " ");
 			List<Affiliation> affiliationList = engine.processAffiliation(affiliation);
 
-			if (affiliationList != null) {				
+			if (affiliationList != null) {
 				for(Affiliation affi : affiliationList) {
 					if (retVal == null) {
 						retVal = "";
 					}
 					retVal += affi.toTEI();
-				}	
+				}
 			}
 			if (GrobidRestUtils.isResultNullOrEmpty(retVal)) {
 				response = Response.status(Status.NO_CONTENT).build();
@@ -252,7 +253,7 @@ public class GrobidRestProcessString {
 	/**
 	 * Parse a raw sequence of affiliations and return the corresponding
 	 * normalized affiliations with address.
-	 * 
+	 *
 	 * @param citation
 	 *			string of the raw sequence of affiliation+address
 	 * @param expectedResponseType
@@ -268,13 +269,18 @@ public class GrobidRestProcessString {
 			engine = Engine.getEngine(true);
 			//citation = citation.replaceAll("\\n", " ").replaceAll("\\t", " ");
 			BiblioItem biblioItem = engine.processRawReference(citation, config.getConsolidateCitations());
-			
+
 			if (biblioItem == null) {
 				response = Response.status(Status.NO_CONTENT).build();
 			} else if (expectedResponseType == ExpectedResponseType.BIBTEX) {
 				response = Response.status(Status.OK)
 							.entity(biblioItem.toBibTeX("-1", config))
 							.header(HttpHeaders.CONTENT_TYPE, BibTexMediaType.MEDIA_TYPE + "; charset=UTF-8")
+							.build();
+			} else if (expectedResponseType == ExpectedResponseType.BIBJSON) {
+				response = Response.status(Status.OK)
+							.entity(biblioItem.toBibJSON("-1", config))
+							.header(HttpHeaders.CONTENT_TYPE, BibJSONMediaType.MEDIA_TYPE + "; charset=UTF-8")
 							.build();
 			} else {
 				response = Response.status(Status.OK)
@@ -299,12 +305,12 @@ public class GrobidRestProcessString {
 
 	/**
 	 * Parse a patent description text and return the extracted and parsed patent and non-patent citations.
-	 * 
+	 *
 	 * @param text
 	 *            string of the patent description text to be processed
  	 * @param consolidate
 	 *            consolidation parameter for the non patent extracted and parsed citation
-	 * 
+	 *
 	 * @return a response object containing the structured xml representation of
 	 *         the affiliation
 	 */
@@ -314,9 +320,9 @@ public class GrobidRestProcessString {
 		Engine engine = null;
 		try {
 			engine = Engine.getEngine(true);
-			
+
 			List<PatentItem> patents = new ArrayList<PatentItem>();
-			List<BibDataSet> articles = new ArrayList<BibDataSet>();						
+			List<BibDataSet> articles = new ArrayList<BibDataSet>();
 			text = text.replaceAll("\\t", " ");
 			String result = engine.processAllCitationsInPatent(text, articles, patents, consolidate, includeRawCitations);
 

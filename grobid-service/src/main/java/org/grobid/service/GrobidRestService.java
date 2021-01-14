@@ -15,6 +15,7 @@ import org.grobid.service.process.GrobidRestProcessFiles;
 import org.grobid.service.process.GrobidRestProcessGeneric;
 import org.grobid.service.process.GrobidRestProcessString;
 import org.grobid.service.util.BibTexMediaType;
+import org.grobid.service.util.BibJSONMediaType;
 import org.grobid.service.util.ExpectedResponseType;
 import org.grobid.service.util.GrobidRestUtils;
 import org.grobid.service.util.ZipUtils;
@@ -90,7 +91,7 @@ public class GrobidRestService implements GrobidPaths {
                 GrobidPoolingFactory.returnEngine(engine);
             }
         }
-        
+
         LOGGER.info("Initiating of Servlet GrobidRestService finished.");
     }
 
@@ -232,7 +233,7 @@ public class GrobidRestService implements GrobidPaths {
         boolean includeRaw = validateIncludeRawParam(includeRawCitations);
         boolean generate = validateGenerateIdParam(generateIDs);
         boolean segment = validateGenerateIdParam(segmentSentences);
-        
+
         List<String> teiCoordinates = collectCoordinates(coordinates);
 
         return restProcessFiles.processFulltextDocument(
@@ -523,7 +524,7 @@ public class GrobidRestService implements GrobidPaths {
             .includeRawCitations(validateIncludeRawParam(includeRawCitations))
             .build();
         return restProcessString.processCitation(citation, config, ExpectedResponseType.BIBTEX);
-    } 
+    }
 
     @Path(PATH_CITATION)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -534,6 +535,21 @@ public class GrobidRestService implements GrobidPaths {
         @DefaultValue("0") @FormParam(CONSOLIDATE_CITATIONS) String consolidate,
         @DefaultValue("0") @FormParam(INCLUDE_RAW_CITATIONS) String includeRawCitations) {
         return processCitationReturnBibTeX_post(citation, consolidate, includeRawCitations);
+    }
+
+    @Path(PATH_CITATION)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(BibJSONMediaType.MEDIA_TYPE)
+    @POST
+    public Response processCitationReturnBibJSON_post(
+        @FormParam(CITATION) String citation,
+        @DefaultValue("0") @FormParam(CONSOLIDATE_CITATIONS) String consolidate,
+        @DefaultValue("0") @FormParam(INCLUDE_RAW_CITATIONS) String includeRawCitations) {
+        GrobidAnalysisConfig config = new GrobidAnalysisConfig.GrobidAnalysisConfigBuilder()
+            .consolidateCitations(validateConsolidationParam(consolidate))
+            .includeRawCitations(validateIncludeRawParam(includeRawCitations))
+            .build();
+        return restProcessString.processCitation(citation, config, ExpectedResponseType.BIBJSON);
     }
 
     /**
@@ -688,7 +704,7 @@ public class GrobidRestService implements GrobidPaths {
         boolean includeRaw = validateIncludeRawParam(includeRawCitations);
         return restProcessFiles.processPDFReferenceAnnotation(inputStream, consolHeader, consolCitations, includeRaw);
     }
-    
+
     @Path(PATH_CITATIONS_PATENT_PDF_ANNOTATION)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json")

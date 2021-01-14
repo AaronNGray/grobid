@@ -189,7 +189,7 @@ public class Engine implements Closeable {
             return finalResults;
         for (String reference : references) {
             BiblioItem bib = parsers.getCitationParser().processingString(reference, 0);
-            //if ((bib != null) && !bib.rejectAsReference()) 
+            //if ((bib != null) && !bib.rejectAsReference())
             {
                 BibDataSet bds = new BibDataSet();
                 bds.setResBib(bib);
@@ -197,21 +197,21 @@ public class Engine implements Closeable {
                 results.add(bds);
             }
         }
-        
+
         if (results.size() == 0)
             return finalResults;
         // consolidation in a second stage to take advantage of parallel calls
         if (consolidate != 0) {
             Consolidation consolidator = Consolidation.getInstance();
             if (consolidator.getCntManager() == null)
-                consolidator.setCntManager(cntManager); 
+                consolidator.setCntManager(cntManager);
             Map<Integer,BiblioItem> resConsolidation = null;
             try {
                 resConsolidation = consolidator.consolidate(results);
             } catch(Exception e) {
                 throw new GrobidException(
                 "An exception occured while running consolidation on bibliographical references.", e);
-            } 
+            }
             if (resConsolidation != null) {
                 for(int i=0; i<results.size(); i++) {
                     BiblioItem resCitation = results.get(i).getResBib();
@@ -403,7 +403,7 @@ public class Engine implements Closeable {
 
     /**
      * Generate blank training data from provided directory of PDF documents, i.e. where TEI files are text only
-     * without tags. This can be used to start from scratch any new model. 
+     * without tags. This can be used to start from scratch any new model.
      *
      * @param inputFile    : the path of the PDF file to be processed
      * @param pathRaw      : the path where to put the CRF feature file
@@ -442,7 +442,7 @@ public class Engine implements Closeable {
      * @param config               - Grobid config
 	 * @return the resulting structured document as a TEI string.
      */
-    public String fullTextToTEI(File inputFile,
+    public String processFulltextDocument /*fullTextToTEI*/(File inputFile,
                                 GrobidAnalysisConfig config) throws Exception {
         return fullTextToTEIDoc(inputFile, config).getTei();
     }
@@ -754,10 +754,10 @@ public class Engine implements Closeable {
      *                             and inject extra metadata) or 2 (consolidate the citation and inject DOI only)
      * @return the list of extracted and parserd patent and non-patent references encoded in TEI.
      */
-    public String processAllCitationsInPatent(String text, 
-                                            List<BibDataSet> nplResults, 
+    public String processAllCitationsInPatent(String text,
+                                            List<BibDataSet> nplResults,
                                             List<PatentItem> patentResults,
-                                            int consolidateCitations, 
+                                            int consolidateCitations,
                                             boolean includeRawCitations) throws Exception {
         if ((nplResults == null) && (patentResults == null)) {
             return null;
@@ -787,7 +787,7 @@ public class Engine implements Closeable {
      */
     public String processAllCitationsInXMLPatent(String xmlPath, List<BibDataSet> nplResults,
                                                  List<PatentItem> patentResults,
-                                                 int consolidateCitations, 
+                                                 int consolidateCitations,
                                                  boolean includeRawCitations) throws Exception {
         if ((nplResults == null) && (patentResults == null)) {
             return null;
@@ -823,7 +823,7 @@ public class Engine implements Closeable {
      */
     public String processAllCitationsInPDFPatent(String pdfPath, List<BibDataSet> nplResults,
                                                  List<PatentItem> patentResults,
-                                                 int consolidateCitations, 
+                                                 int consolidateCitations,
                                                  boolean includeRawCitations) throws Exception {
         if ((nplResults == null) && (patentResults == null)) {
             return null;
@@ -833,11 +833,11 @@ public class Engine implements Closeable {
         return parsers.getReferenceExtractor().extractAllReferencesPDFFile(pdfPath, filterDuplicate,
                 consolidateCitations, includeRawCitations, patentResults, nplResults);
     }
-	
+
     /**
      * Extract and parse both patent and non patent references within a patent
      * in PDF format. Results are provided as JSON annotations with coordinates
-	 * of the annotations in the orignal PDF and reference informations in DOCDB 
+	 * of the annotations in the orignal PDF and reference informations in DOCDB
 	 * format (format according to WIPO and ISO standards).
      *
      * @param pdfPath              pdf path
@@ -848,8 +848,8 @@ public class Engine implements Closeable {
      * @return JSON annotations with extracted and parsed patent and non-patent references
      *         together with coordinates in the original PDF.
      */
-    public String annotateAllCitationsInPDFPatent(String pdfPath, 
-                                                  int consolidateCitations, 
+    public String annotateAllCitationsInPDFPatent(String pdfPath,
+                                                  int consolidateCitations,
                                                   boolean includeRawCitations) throws Exception {
 		List<BibDataSet> nplResults = new ArrayList<BibDataSet>();
 		List<PatentItem> patentResults = new ArrayList<PatentItem>();

@@ -114,7 +114,7 @@ public class Document implements Serializable {
     protected transient List<BibDataSet> bibDataSets = null;
 
     // header of the document - if extracted and processed
-    protected transient BiblioItem resHeader = null;
+    public transient BiblioItem resHeader = null;
 
     // full text as tructure TEI - if extracted and processed
     protected String tei;
@@ -164,12 +164,13 @@ public class Document implements Serializable {
     // map of sequence of LayoutTokens for the fulltext model labels
     //Map<String, List<LayoutTokenization>> labeledTokenSequences = null;
 
-    protected double byteSize = 0; 
+    protected double byteSize = 0;
 
     public Document(DocumentSource documentSource) {
         this.documentSource = documentSource;
         setPathXML(documentSource.getXmlFile());
         this.byteSize = documentSource.getByteSize();
+        this.resHeader = new BiblioItem();
     }
 
     protected Document() {
@@ -303,7 +304,7 @@ public class Document implements Serializable {
     *
     *  @author Daniel Ecer
     */
-    protected static void parseInputStream(InputStream in, SAXParser saxParser, DefaultHandler handler) 
+    protected static void parseInputStream(InputStream in, SAXParser saxParser, DefaultHandler handler)
         throws SAXException, IOException {
         CharsetDecoder utf8Decoder = Charset.forName("UTF-8").newDecoder();
         utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
@@ -311,7 +312,7 @@ public class Document implements Serializable {
         saxParser.parse(new InputSource(new InputStreamReader(in, utf8Decoder)), handler);
     }
 
-    protected static void parseInputStream(InputStream in, SAXParserFactory saxParserFactory, DefaultHandler handler) 
+    protected static void parseInputStream(InputStream in, SAXParserFactory saxParserFactory, DefaultHandler handler)
         throws SAXException, IOException, ParserConfigurationException {
         parseInputStream(in, saxParserFactory.newSAXParser(), handler);
     }
@@ -862,7 +863,7 @@ public class Document implements Serializable {
                 //( (Math.abs((image.x+image.getWidth()) - block.getX()) < MIN_DISTANCE) ||
                 //  (Math.abs(image.x - (block.getX()+block.getWidth())) < MIN_DISTANCE) )
                     ) {
-                // the image is at a distance of at least MIN_DISTANCE from one border 
+                // the image is at a distance of at least MIN_DISTANCE from one border
                 // of the block on the vertical/horizontal axis
                 if (images == null)
                     images = new ArrayList<GraphicObject>();
@@ -1460,7 +1461,7 @@ public class Document implements Serializable {
             String text = block.getText();
             if ((text != null) && (!text.contains("@PAGE")) && (!text.contains("@IMAGE"))) {
                 double surface = block.getWidth() * block.getHeight();
-                
+
                 /*System.out.println("block.width: " + block.width);
                 System.out.println("block.height: " + block.height);
                 System.out.println("surface: " + surface);
@@ -1538,8 +1539,8 @@ public class Document implements Serializable {
     }
 
     /**
-     * Initialize the mapping between sequences of LayoutToken and 
-     * fulltext model labels. 
+     * Initialize the mapping between sequences of LayoutToken and
+     * fulltext model labels.
      * @param labeledResult labeled sequence as produced by the CRF model
      * @param tokenization List of LayoutToken for the body parts
      */
