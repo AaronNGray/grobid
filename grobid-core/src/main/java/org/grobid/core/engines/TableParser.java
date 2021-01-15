@@ -8,13 +8,14 @@ import org.grobid.core.exceptions.GrobidException;
 import org.grobid.core.layout.LayoutToken;
 import org.grobid.core.tokenization.TaggingTokenCluster;
 import org.grobid.core.tokenization.TaggingTokenClusteror;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.BoundingBoxCalculator;
 import org.grobid.core.utilities.LayoutTokensUtil;
 import org.grobid.core.utilities.TextUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +91,7 @@ public class TableParser extends AbstractParser {
                 LOGGER.warn("Unexpected table model label - " + clusterLabel.getLabel() + " for " + clusterContent);
             }
 
-        }     
+        }
 
         return table;
     }

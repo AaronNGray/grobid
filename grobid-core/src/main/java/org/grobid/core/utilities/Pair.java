@@ -1,11 +1,11 @@
 package org.grobid.core.utilities;
 
-public class Pair<A, B> {
+public class Pair<L, R> /*extends org.apache.commons.lang3.tuple.Pair*/ {
 
-    public final A a;
-    public final B b;
+    public final L a;
+    public final R b;
 
-    public Pair(A a, B b) {
+    public Pair(L a, R b) {
         this.a = a;
         this.b = b;
     }
@@ -40,12 +40,23 @@ public class Pair<A, B> {
         return 7 * (a != null ? a.hashCode() : 11) + 13 * (b != null ? b.hashCode() : 3);
     }
 
-    public A getA() {
+    public L getA() {
         return a;
     }
 
-    public B getB() {
+    public R getB() {
         return b;
     }
 
+    public L getLeft() {
+        return a;
+    }
+
+    public R getRight() {
+        return b;
+    }
+
+    public static <L,R> Pair<L,R> of(L left, R right) {
+        return new Pair(left, right);
+    }
 }

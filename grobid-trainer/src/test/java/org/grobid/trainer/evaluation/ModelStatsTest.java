@@ -1,7 +1,7 @@
 package org.grobid.trainer.evaluation;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +11,8 @@ import java.util.TreeMap;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
+import org.grobid.core.utilities.Pair;
 
 public class ModelStatsTest {
 

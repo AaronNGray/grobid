@@ -2,7 +2,7 @@ package org.grobid.core.document;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.StringUtils;
 
 import nu.xom.Attribute;
@@ -32,6 +32,7 @@ import org.grobid.core.layout.Page;
 import org.grobid.core.tokenization.TaggingTokenCluster;
 import org.grobid.core.tokenization.TaggingTokenClusteror;
 import org.grobid.core.utilities.*;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.counters.CntManager;
 import org.grobid.core.utilities.matching.EntityMatcherException;
 import org.grobid.core.utilities.matching.ReferenceMarkerMatcher;
@@ -129,7 +130,7 @@ public class TEIFormatter {
             // standard RelaxNG
             tei.append("<?xml-model href=\"" + SCHEMA_RNG_LOCATION +
                     "\" schematypens=\"http://relaxng.org/ns/structure/1.0\"?>\n");
-        } 
+        }
 
         // by default there is no schema association
 
@@ -345,7 +346,7 @@ public class TEIFormatter {
                     tei.append("\t\t\t\t\t\t<title");
                     //if ( (bookTitle == null) & (journal == null) )
                     //	tei.append(" level=\"m\"");
-                    //else 
+                    //else
                     tei.append(" level=\"a\"");
                     if (generateIDs) {
                         String divID = KeyGen.getKey().substring(0, 7);
@@ -825,9 +826,9 @@ public class TEIFormatter {
                                             bds,
                                             false,
                                             new LayoutTokenization(biblio.getLayoutTokens(TaggingLabels.HEADER_ABSTRACT)),
-                                            null, 
-                                            null, 
-                                            null, 
+                                            null,
+                                            null,
+                                            null,
                                             doc,
                                             config); // no figure, no table, no equation
                 } catch(Exception e) {
@@ -950,7 +951,7 @@ public class TEIFormatter {
             return buffer;
         }
         buffer.append("\t\t<body>\n");
-        buffer = toTEITextPiece(buffer, result, biblio, bds, true, 
+        buffer = toTEITextPiece(buffer, result, biblio, bds, true,
                 layoutTokenization, figures, tables, equations, doc, config);
 
         // notes are still in the body
@@ -983,7 +984,7 @@ public class TEIFormatter {
                                     GrobidAnalysisConfig config) throws Exception {
         List<String> allNotes = new ArrayList<>();
         for (DocumentPiece docPiece : documentNoteParts) {
-            
+
             List<LayoutToken> noteTokens = doc.getDocumentPieceTokenization(docPiece);
             if ((noteTokens == null) || (noteTokens.size() == 0))
                 continue;
@@ -1048,8 +1049,8 @@ public class TEIFormatter {
                 addXmlId(desc, "_" + divID);
             }
 
-            // for labelling bibligraphical references in footnotes 
-            org.apache.commons.lang3.tuple.Pair<String, List<LayoutToken>> noteProcess = 
+            // for labelling bibligraphical references in footnotes
+            /*org.apache.commons.lang3.tuple.*/ Pair<String, List<LayoutToken>> noteProcess =
                 fullTextParser.processShort(noteTokens, doc);
             String labeledNote = noteProcess.getLeft();
             List<LayoutToken> noteLayoutTokens = noteProcess.getRight();
@@ -1057,7 +1058,7 @@ public class TEIFormatter {
             if ( (labeledNote != null) && (labeledNote.length() > 0) ) {
                 TaggingTokenClusteror clusteror = new TaggingTokenClusteror(GrobidModels.FULLTEXT, labeledNote, noteLayoutTokens);
                 List<TaggingTokenCluster> clusters = clusteror.cluster();
-                
+
                 for (TaggingTokenCluster cluster : clusters) {
                     if (cluster == null) {
                         continue;
@@ -1070,7 +1071,7 @@ public class TEIFormatter {
                             List<Node> refNodes = this.markReferencesTEILuceneBased(
                                     cluster.concatTokens(),
                                     doc.getReferenceMarkerMatcher(),
-                                    config.isGenerateTeiCoordinates("ref"), 
+                                    config.isGenerateTeiCoordinates("ref"),
                                     false);
                             if (refNodes != null) {
                                 for (Node n : refNodes) {
@@ -1180,7 +1181,7 @@ public class TEIFormatter {
         Element curParagraph = null;
         List<LayoutToken> curParagraphTokens = null;
         Element curList = null;
-        int equationIndex = 0; // current equation index position 
+        int equationIndex = 0; // current equation index position
         for (TaggingTokenCluster cluster : clusters) {
             if (cluster == null) {
                 continue;
@@ -1215,7 +1216,7 @@ public class TEIFormatter {
 
                 curDiv.appendChild(head);
                 divResults.add(curDiv);
-            } else if (clusterLabel.equals(TaggingLabels.EQUATION) || 
+            } else if (clusterLabel.equals(TaggingLabels.EQUATION) ||
                     clusterLabel.equals(TaggingLabels.EQUATION_LABEL)) {
                 // get starting position of the cluster
                 int start = -1;
@@ -1227,7 +1228,7 @@ public class TEIFormatter {
                     Equation theEquation = null;
                     if (equations != null) {
                         for(int i=0; i<equations.size(); i++) {
-                            if (i < equationIndex) 
+                            if (i < equationIndex)
                                 continue;
                             Equation equation = equations.get(i);
                             if (equation.getStart() == start) {
@@ -1291,7 +1292,7 @@ public class TEIFormatter {
                 if (clusterLabel.equals(TaggingLabels.CITATION_MARKER)) {
                     refNodes = markReferencesTEILuceneBased(refTokens,
                             doc.getReferenceMarkerMatcher(),
-                            config.isGenerateTeiCoordinates("ref"), 
+                            config.isGenerateTeiCoordinates("ref"),
                             keepUnsolvedCallout);
 
                 } else if (clusterLabel.equals(TaggingLabels.FIGURE_MARKER)) {
@@ -1302,7 +1303,7 @@ public class TEIFormatter {
                             config.isGenerateTeiCoordinates("ref"));
                 } else if (clusterLabel.equals(TaggingLabels.EQUATION_MARKER)) {
                     refNodes = markReferencesEquationTEI(chunkRefString, refTokens, equations,
-                            config.isGenerateTeiCoordinates("ref"));                    
+                            config.isGenerateTeiCoordinates("ref"));
                 } else {
                     throw new IllegalStateException("Unsupported marker type: " + clusterLabel);
                 }
@@ -1323,7 +1324,7 @@ public class TEIFormatter {
             lastClusterLabel = cluster.getTaggingLabel();
         }
 
-        // in case we segment paragraph into sentences, we still need to do it for the last paragraph 
+        // in case we segment paragraph into sentences, we still need to do it for the last paragraph
         if (curParagraph != null && config.isWithSentenceSegmentation()) {
             segmentIntoSentences(curParagraph, curParagraphTokens, config, doc.getLanguage());
         }
@@ -1335,10 +1336,10 @@ public class TEIFormatter {
                 if ( (theDiv.getChildElements() == null) || (theDiv.getChildElements().size() == 0) ) {
                     divResults.remove(i);
                 }
-            } 
+            }
         }
 
-        if (divResults.size() != 0) 
+        if (divResults.size() != 0)
             buffer.append(XmlBuilderUtils.toXml(divResults));
         else
             buffer.append(XmlBuilderUtils.toXml(curDiv));
@@ -1392,7 +1393,7 @@ public class TEIFormatter {
     }
 
     public void segmentIntoSentences(Element curParagraph, List<LayoutToken> curParagraphTokens, GrobidAnalysisConfig config, String lang) {
-        // in order to avoid having a sentence boundary in the middle of a ref element 
+        // in order to avoid having a sentence boundary in the middle of a ref element
         // (which is frequent given the abbreviation in the reference expression, e.g. Fig.)
         // we only consider for sentence segmentation texts under <p> and skip the text under <ref>.
         if (curParagraph == null)
@@ -1420,16 +1421,16 @@ public class TEIFormatter {
 
                     String chunk = theNode.getValue();
                     forbiddenPositions.add(new OffsetPosition(pos, pos+chunk.length()));
-                    pos += chunk.length();                    
+                    pos += chunk.length();
                 }
             }
         }
 
-        List<OffsetPosition> theSentences = 
+        List<OffsetPosition> theSentences =
             SentenceUtilities.getInstance().runSentenceDetection(text, forbiddenPositions, curParagraphTokens, new Language(lang));
-    
+
         /*if (theSentences.size() == 0) {
-            // this should normally not happen, but it happens (depending on sentence splitter, usually the text 
+            // this should normally not happen, but it happens (depending on sentence splitter, usually the text
             // is just a punctuation)
             // in this case we consider the current text as a unique sentence as fall back
             theSentences.add(new OffsetPosition(0, text.length()));
@@ -1439,17 +1440,17 @@ public class TEIFormatter {
         List<List<LayoutToken>> segmentedParagraphTokens = new ArrayList<>();
         List<LayoutToken> currentSentenceTokens = new ArrayList<>();
         pos = 0;
-        
+
         if (config.isGenerateTeiCoordinates("s")) {
-            
+
             int currentSentenceIndex = 0;
-//System.out.println(text);            
+//System.out.println(text);
 //System.out.println("theSentences.size(): " + theSentences.size());
             String sentenceChunk = text.substring(theSentences.get(currentSentenceIndex).start, theSentences.get(currentSentenceIndex).end);
 
             for(int i=0; i<curParagraphTokens.size(); i++) {
                 LayoutToken token = curParagraphTokens.get(i);
-                if (token.getText() == null || token.getText().length() == 0) 
+                if (token.getText() == null || token.getText().length() == 0)
                     continue;
                 int newPos = sentenceChunk.indexOf(token.getText(), pos);
                 if ((newPos != -1) || SentenceUtilities.toSkipToken(token.getText())) {
@@ -1469,7 +1470,7 @@ public class TEIFormatter {
                     currentSentenceTokens.add(token);
                     pos = 0;
                 }
-                
+
                 if (currentSentenceIndex >= theSentences.size())
                     break;
             }
@@ -1509,12 +1510,12 @@ System.out.println(theSentences.toString());
                     }
                 }
             }
-            
+
             int sentenceLength = theSentences.get(i).end - pos;
             // check if we have a ref between pos and pos+sentenceLength
             for(int j=refIndex; j<refPositions.size(); j++) {
                 int refPos = refPositions.get(j).intValue();
-                if (refPos < pos+posInSentence) 
+                if (refPos < pos+posInSentence)
                     continue;
 
                 if (refPos >= pos+posInSentence && refPos <= pos+sentenceLength) {
@@ -1638,16 +1639,16 @@ System.out.println(theSentences.toString());
      * Mark using TEI annotations the identified references in the text body build with the machine learning model.
      */
     public List<Node> markReferencesTEILuceneBased(List<LayoutToken> refTokens,
-                                                   ReferenceMarkerMatcher markerMatcher, 
+                                                   ReferenceMarkerMatcher markerMatcher,
                                                    boolean generateCoordinates,
                                                    boolean keepUnsolvedCallout) throws EntityMatcherException {
         // safety tests
-        if ( (refTokens == null) || (refTokens.size() == 0) ) 
+        if ( (refTokens == null) || (refTokens.size() == 0) )
             return null;
         String text = LayoutTokensUtil.toText(refTokens);
         if (text == null || text.trim().length() == 0 || text.endsWith("</ref>") || text.startsWith("<ref") || markerMatcher == null)
             return Collections.<Node>singletonList(new Text(text));
-        
+
         boolean spaceEnd = false;
         text = text.replace("\n", " ");
         if (text.endsWith(" "))
@@ -1679,7 +1680,7 @@ System.out.println(theSentences.toString());
                 }
                 if ( solved || (!solved && keepUnsolvedCallout) )
                     nodes.add(ref);
-                else 
+                else
                     nodes.add(textNode(matchResult.getText()));
             }
         }
@@ -1689,7 +1690,7 @@ System.out.println(theSentences.toString());
     }
 
 
-    public List<Node> markReferencesFigureTEI(String text, 
+    public List<Node> markReferencesFigureTEI(String text,
                                             List<LayoutToken> refTokens,
                                             List<Figure> figures,
                                             boolean generateCoordinates) {
@@ -1802,7 +1803,7 @@ System.out.println(theSentences.toString());
 
     private static Pattern patternNumber = Pattern.compile("\\d+");
 
-    public List<Node> markReferencesEquationTEI(String text, 
+    public List<Node> markReferencesEquationTEI(String text,
                                             List<LayoutToken> refTokens,
                                             List<Equation> equations,
                                             boolean generateCoordinates) {
@@ -1833,15 +1834,15 @@ System.out.println(theSentences.toString());
                     //if ((label.length() > 0) &&
                     //        (textLow.contains(label.toLowerCase()))) {
                     if ( (labelNumber != null && textNumber != null && labelNumber.length()>0 &&
-                        labelNumber.equals(textNumber)) || 
+                        labelNumber.equals(textNumber)) ||
                         ((label.length() > 0) && (textLow.equals(label.toLowerCase()))) ) {
                         bestFormula = equation.getId();
                         break;
-                    } 
+                    }
                 }
             }
         }
-        
+
         boolean spaceEnd = false;
         text = text.replace("\n", " ");
         if (text.endsWith(" "))
@@ -1880,9 +1881,9 @@ System.out.println(theSentences.toString());
 
     /**
      * In case, the coordinates of structural elements are provided in the TEI
-     * representation, we need the page sizes in order to scale the coordinates 
-     * appropriately. These size information are provided via the TEI facsimile 
-     * element, with a surface element for each page carrying the page size info.  
+     * representation, we need the page sizes in order to scale the coordinates
+     * appropriately. These size information are provided via the TEI facsimile
+     * element, with a surface element for each page carrying the page size info.
      */
     public StringBuilder toTEIPages(StringBuilder buffer,
                                    Document doc,
@@ -1898,7 +1899,7 @@ System.out.println(theSentences.toString());
         buffer.append("\t<facsimile>\n");
         for(Page page : pages) {
             buffer.append("\t\t<surface ");
-            buffer.append("n=\"" + pageNumber + "\" "); 
+            buffer.append("n=\"" + pageNumber + "\" ");
             buffer.append("ulx=\"0.0\" uly=\"0.0\" ");
             buffer.append("lrx=\"" + page.getWidth() + "\" lry=\"" + page.getHeight() + "\"");
             buffer.append("/>\n");

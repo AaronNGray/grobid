@@ -19,7 +19,7 @@ import org.grobid.core.layout.LayoutToken;
 import org.grobid.core.tokenization.LabeledTokensContainer;
 import org.grobid.core.tokenization.TaggingTokenSynchronizer;
 import org.grobid.core.utilities.BoundingBoxCalculator;
-//import org.grobid.core.utilities.Pair;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.TextUtilities;
 import org.grobid.core.utilities.Triple;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * @author Slava, Patrice
@@ -484,7 +484,7 @@ public class ReferenceSegmenterParser extends AbstractParser implements Referenc
 
 /*for(int i=dp1.getTokenDocPos(); i<dp2.getTokenDocPos(); i++) {
 	System.out.print(tokenizations.get(i));
-}	
+}
 System.out.println("");
 */
 			//currentLineLength = lineLengths.get(lineIndex);

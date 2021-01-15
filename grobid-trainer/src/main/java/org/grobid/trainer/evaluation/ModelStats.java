@@ -1,7 +1,8 @@
 package org.grobid.trainer.evaluation;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.ImmutablePair;
+//import org.apache.commons.lang3.tuple.Pair;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.OffsetPosition;
 import org.grobid.core.utilities.TextUtilities;
 
@@ -70,7 +71,7 @@ public class ModelStats {
             }
         }
 
-        return new ImmutablePair<>(totalInstance, correctInstance);
+        return new Pair<>(totalInstance, correctInstance);
     }
 
 
@@ -219,7 +220,7 @@ public class ModelStats {
                 (!obtainedLabel.equals(getPlainLabel(previousObtainedLabel)))) {
                 // new obtained field
                 currentObtainedPosition.end = pos - 1;
-                Pair<String, OffsetPosition> theField = new ImmutablePair<>(getPlainLabel(previousObtainedLabel),
+                Pair<String, OffsetPosition> theField = new Pair<>(getPlainLabel(previousObtainedLabel),
                     currentObtainedPosition);
                 currentObtainedPosition = new OffsetPosition();
                 currentObtainedPosition.start = pos;
@@ -230,7 +231,7 @@ public class ModelStats {
                 (!expectedLabel.equals(getPlainLabel(previousExpectedLabel)))) {
                 // new expected field
                 currentExpectedPosition.end = pos - 1;
-                Pair<String, OffsetPosition> theField = new ImmutablePair<>(getPlainLabel(previousExpectedLabel),
+                Pair<String, OffsetPosition> theField = new Pair<>(getPlainLabel(previousExpectedLabel),
                     currentExpectedPosition);
                 currentExpectedPosition = new OffsetPosition();
                 currentExpectedPosition.start = pos;
@@ -244,14 +245,14 @@ public class ModelStats {
         // last fields of the sequence
         if ((previousObtainedLabel != null)) {
             currentObtainedPosition.end = pos - 1;
-            Pair<String, OffsetPosition> theField = new ImmutablePair<>(getPlainLabel(previousObtainedLabel),
+            Pair<String, OffsetPosition> theField = new Pair<>(getPlainLabel(previousObtainedLabel),
                 currentObtainedPosition);
             obtainedFields.add(theField);
         }
 
         if ((previousExpectedLabel != null)) {
             currentExpectedPosition.end = pos - 1;
-            Pair<String, OffsetPosition> theField = new ImmutablePair<>(getPlainLabel(previousExpectedLabel),
+            Pair<String, OffsetPosition> theField = new Pair<>(getPlainLabel(previousExpectedLabel),
                 currentExpectedPosition);
             expectedFields.add(theField);
         }

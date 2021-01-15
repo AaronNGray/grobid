@@ -1,5 +1,7 @@
 package org.grobid.core.document;
 
+//import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -10,13 +12,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SortedSetMultimap;
 import org.apache.commons.io.IOUtils;
+
+import org.grobid.core.GrobidModels;    // HACK
 import org.grobid.core.analyzers.Analyzer;
 import org.grobid.core.analyzers.GrobidAnalyzer;
 import org.grobid.core.data.*;
+import org.grobid.core.engines.AbstractParser;
 import org.grobid.core.engines.Engine;
 import org.grobid.core.engines.config.GrobidAnalysisConfig;
 import org.grobid.core.engines.counters.FigureCounters;
 import org.grobid.core.engines.counters.TableRejectionCounters;
+import org.grobid.core.engines.label.SegmentationLabels;
+import org.grobid.core.engines.label.TaggingLabels;
 import org.grobid.core.engines.label.TaggingLabel;
 import org.grobid.core.exceptions.GrobidException;
 import org.grobid.core.exceptions.GrobidExceptionStatus;
@@ -28,6 +35,7 @@ import org.grobid.core.layout.Cluster;
 import org.grobid.core.layout.GraphicObject;
 import org.grobid.core.layout.GraphicObjectType;
 import org.grobid.core.layout.LayoutToken;
+import org.grobid.core.layout.LayoutTokenization;
 import org.grobid.core.layout.PDFAnnotation;
 import org.grobid.core.layout.Page;
 import org.grobid.core.layout.VectorGraphicBoxCalculator;
@@ -81,7 +89,7 @@ import java.util.stream.Collectors;
  * @author Patrice Lopez
  */
 
-public class Document implements Serializable {
+public class Document extends AbstractParser implements Serializable { // HACK
 
     public static final long serialVersionUID = 1L;
 
@@ -151,12 +159,12 @@ public class Document implements Serializable {
 
     protected boolean titleMatchNum = false; // true if the section titles of the document are numbered
 
-    protected transient List<Figure> figures;
+    public transient List<Figure> figures;
     protected transient Predicate<GraphicObject> validGraphicObjectPredicate;
     protected int m;
 
-    protected transient List<Table> tables;
-    protected transient List<Equation> equations;
+    public transient List<Table> tables;
+    public transient List<Equation> equations;
 
     // the analyzer/tokenizer used for processing this document
     protected transient Analyzer analyzer = GrobidAnalyzer.getInstance();
@@ -166,7 +174,21 @@ public class Document implements Serializable {
 
     protected double byteSize = 0;
 
+    public transient String resultBody = null;
+    public transient String resultAnnex = null;
+    public transient LayoutTokenization layoutTokenization = null;
+    public transient List<LayoutToken> tokenizationsAnnex = null;
+
+//    public transient List<Figure> figures = null;
+//    public List<Table> tables = null;
+//    public List<Equation> equations = null;
+
+    public transient Pair<String, LayoutTokenization> featSeg = null;
+
+    //
+
     public Document(DocumentSource documentSource) {
+        super(GrobidModels.FULLTEXT);
         this.documentSource = documentSource;
         setPathXML(documentSource.getXmlFile());
         this.byteSize = documentSource.getByteSize();
@@ -174,6 +196,7 @@ public class Document implements Serializable {
     }
 
     protected Document() {
+        super(GrobidModels.FULLTEXT);
         this.documentSource = null;
     }
 
@@ -1573,4 +1596,70 @@ public class Document implements Serializable {
     public void setByteSize(double size) {
         byteSize = size;
     }
+
+
+    /**
+     * Create the TEI representation for a document based on the parsed header, references
+     * and body sections.
+     */
+    public String toTEI(GrobidAnalysisConfig config) {
+        if (getBlocks() == null) {
+            return null;
+        }
+        List<BibDataSet> resCitations = getBibDataSets();
+        TEIFormatter teiFormatter = new TEIFormatter(this, null);
+        StringBuilder teiStringBuilder;
+        try {
+            teiStringBuilder = teiFormatter.toTEIHeader(resHeader, null, resCitations, config);
+
+			//System.out.println(rese);
+            //int mode = config.getFulltextProcessingMode();
+			teiStringBuilder = teiFormatter.toTEIBody(teiStringBuilder, resultBody, resHeader, resCitations,
+					layoutTokenization, figures, tables, equations, this, config);
+
+			teiStringBuilder.append("\t\t<back>\n");
+
+			// acknowledgement is in the back
+			SortedSet<DocumentPiece> documentAcknowledgementParts =
+				getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
+/*
+			Pair<String, LayoutTokenization> doc.featSeg =
+				getBodyTextFeatured(this, documentAcknowledgementParts);
+*/
+			List<LayoutToken> tokenizationsAcknowledgement;
+			if (featSeg != null) {
+				// if doc.featSeg is null, it usually means that no body segment is found in the
+				// document segmentation
+				String acknowledgementText = featSeg.getLeft();
+				tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
+				String reseAcknowledgement = null;
+				if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
+					reseAcknowledgement = label(acknowledgementText); // HACK
+				teiStringBuilder = teiFormatter.toTEIAcknowledgement(teiStringBuilder, reseAcknowledgement,
+					tokenizationsAcknowledgement, resCitations, config);
+			}
+
+			teiStringBuilder = teiFormatter.toTEIAnnex(teiStringBuilder, resultAnnex, resHeader, resCitations,
+				tokenizationsAnnex, this, config);
+
+			teiStringBuilder = teiFormatter.toTEIReferences(teiStringBuilder, resCitations, config);
+            calculateTeiIdToBibDataSets();
+
+            teiStringBuilder.append("\t\t</back>\n");
+
+            teiStringBuilder.append("\t</text>\n");
+            teiStringBuilder.append("</TEI>\n");
+        } catch (Exception e) {
+            throw new GrobidException("An exception occurred while running Grobid.", e);
+        }
+
+		tei = teiStringBuilder.toString();
+		return tei;
+		//TODO: reevaluate
+//		this.setTei(
+//				XmlBuilderUtils.toPrettyXml(
+//						XmlBuilderUtils.fromString(tei.toString())
+//				)
+//		);
+	}
 }

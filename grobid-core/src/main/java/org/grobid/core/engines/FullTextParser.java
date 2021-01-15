@@ -3,7 +3,7 @@ package org.grobid.core.engines;
 import com.google.common.collect.Iterables;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.io.FileUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -38,6 +38,7 @@ import org.grobid.core.layout.*;
 import org.grobid.core.tokenization.TaggingTokenCluster;
 import org.grobid.core.tokenization.TaggingTokenClusteror;
 import org.grobid.core.utilities.LanguageUtilities;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.TextUtilities;
 import org.grobid.core.utilities.KeyGen;
 import org.grobid.core.utilities.LayoutTokensUtil;
@@ -136,7 +137,7 @@ public class FullTextParser extends AbstractParser {
 
             // header processing
 //            BiblioItem resHeader = new BiblioItem();
-            Pair<String, LayoutTokenization> featSeg = null;
+//            Pair<String, LayoutTokenization> featSeg = null;
 
             // using the segmentation model to identify the header zones
             parsers.getHeaderParser().processingHeaderSection(config, doc, null, /*resHeader, */ false);
@@ -232,26 +233,28 @@ public class FullTextParser extends AbstractParser {
             doc.setBibDataSets(resCitations);
 
 			// full text processing
-			featSeg = getBodyTextFeatured(doc, documentBodyParts);
+			doc.featSeg = getBodyTextFeatured(doc, documentBodyParts);
+/*
 			String resultBody = null;
 			LayoutTokenization layoutTokenization = null;
 			List<Figure> figures = null;
 			List<Table> tables = null;
 			List<Equation> equations = null;
-			if (featSeg != null && isNotBlank(featSeg.getLeft())) {
-				// if featSeg is null, it usually means that no body segment is found in the
+*/
+			if (doc.featSeg != null && isNotBlank(doc.featSeg.getLeft())) {
+				// if doc.featSeg is null, it usually means that no body segment is found in the
 				// document segmentation
-				String bodytext = featSeg.getLeft();
-				layoutTokenization = featSeg.getRight();
-				//tokenizationsBody = featSeg.getB().getTokenization();
-                //layoutTokensBody = featSeg.getB().getLayoutTokens();
+				String bodytext = doc.featSeg.getLeft();
+				doc.layoutTokenization = doc.featSeg.getRight();
+				//tokenizationsBody = doc.featSeg.getB().getTokenization();
+                //layoutTokensBody = doc.featSeg.getB().getLayoutTokens();
 
-                resultBody = label(bodytext);
+                doc.resultBody = label(bodytext);
 
 				// we apply now the figure and table models based on the fulltext labeled output
-				figures = processFigures(resultBody, layoutTokenization.getTokenization(), doc);
+				doc.figures = processFigures(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
                 // further parse the caption
-                for(Figure figure : figures) {
+                for(Figure figure : doc.figures) {
                     if (CollectionUtils.isNotEmpty(figure.getCaptionLayoutTokens()) ) {
                         Pair<String, List<LayoutToken>> captionProcess = processShort(figure.getCaptionLayoutTokens(), doc);
                         figure.setLabeledCaption(captionProcess.getLeft());
@@ -259,9 +262,9 @@ public class FullTextParser extends AbstractParser {
                     }
                 }
 
-				tables = processTables(resultBody, layoutTokenization.getTokenization(), doc);
+				doc.tables = processTables(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
                 // further parse the caption
-                for(Table table : tables) {
+                for(Table table : doc.tables) {
                     if ( CollectionUtils.isNotEmpty(table.getCaptionLayoutTokens()) ) {
                         Pair<String, List<LayoutToken>> captionProcess = processShort(table.getCaptionLayoutTokens(), doc);
                         table.setLabeledCaption(captionProcess.getLeft());
@@ -274,32 +277,27 @@ public class FullTextParser extends AbstractParser {
                     }
                 }
 
-				equations = processEquations(resultBody, layoutTokenization.getTokenization(), doc);
+				doc.equations = processEquations(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
 			} else {
 				LOGGER.debug("Fulltext model: The featured body is empty");
 			}
 
 			// possible annexes (view as a piece of full text similar to the body)
 			documentBodyParts = doc.getDocumentPart(SegmentationLabels.ANNEX);
-            featSeg = getBodyTextFeatured(doc, documentBodyParts);
-			String resultAnnex = null;
+            doc.featSeg = getBodyTextFeatured(doc, documentBodyParts);
+//			String resultAnnex = null;
 			List<LayoutToken> tokenizationsBody2 = null;
-			if (featSeg != null && isNotEmpty(trim(featSeg.getLeft()))) {
-				// if featSeg is null, it usually means that no body segment is found in the
+			if (doc.featSeg != null && isNotEmpty(trim(doc.featSeg.getLeft()))) {
+				// if doc.featSeg is null, it usually means that no body segment is found in the
 				// document segmentation
-				String bodytext = featSeg.getLeft();
-				tokenizationsBody2 = featSeg.getRight().getTokenization();
-				resultAnnex = label(bodytext);
+				String bodytext = doc.featSeg.getLeft();
+				doc.tokenizationsAnnex = doc.featSeg.getRight().getTokenization();
+				doc.resultAnnex = label(bodytext);
 				//System.out.println(rese);
 			}
 
             // final combination
-            toTEI(doc, // document
-				resultBody, resultAnnex, // labeled data for body and annex
-				layoutTokenization, tokenizationsBody2, // tokenization for body and annex
-				/*doc.resHeader,*/ // header
-				figures, tables, equations,
-				config);
+            toTEI(doc, config);
             return doc;
         } catch (GrobidException e) {
 			throw e;
@@ -2277,16 +2275,7 @@ public class FullTextParser extends AbstractParser {
      * Create the TEI representation for a document based on the parsed header, references
      * and body sections.
      */
-    private void toTEI(Document doc,
-                       String reseBody,
-                       String reseAnnex,
-					   LayoutTokenization layoutTokenization,
-                       List<LayoutToken> tokenizationsAnnex,
-                       /*BiblioItem resHeader,*/
-                       List<Figure> figures,
-                       List<Table> tables,
-                       List<Equation> equations,
-                       GrobidAnalysisConfig config) {
+    private void toTEI(Document doc, GrobidAnalysisConfig config) {
         if (doc.getBlocks() == null) {
             return;
         }
@@ -2298,8 +2287,8 @@ public class FullTextParser extends AbstractParser {
 
 			//System.out.println(rese);
             //int mode = config.getFulltextProcessingMode();
-			tei = teiFormatter.toTEIBody(tei, reseBody, doc.resHeader, resCitations,
-					layoutTokenization, figures, tables, equations, doc, config);
+			tei = teiFormatter.toTEIBody(tei, doc.resultBody, doc.resHeader, resCitations,
+					doc.layoutTokenization, doc.figures, doc.tables, doc.equations, doc, config);
 
 			tei.append("\t\t<back>\n");
 
@@ -2321,8 +2310,8 @@ public class FullTextParser extends AbstractParser {
 					tokenizationsAcknowledgement, resCitations, config);
 			}
 
-			tei = teiFormatter.toTEIAnnex(tei, reseAnnex, doc.resHeader, resCitations,
-				tokenizationsAnnex, doc, config);
+			tei = teiFormatter.toTEIAnnex(tei, doc.resultAnnex, doc.resHeader, resCitations,
+				doc.tokenizationsAnnex, doc, config);
 
 			tei = teiFormatter.toTEIReferences(tei, resCitations, config);
             doc.calculateTeiIdToBibDataSets();

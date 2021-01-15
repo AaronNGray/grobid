@@ -3,8 +3,9 @@ package org.grobid.core.engines.tagging;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 import org.grobid.core.engines.label.TaggingLabels;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.Triple;
 import org.wipo.analyzers.wipokr.utils.StringUtil;
 

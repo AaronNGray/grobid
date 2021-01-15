@@ -8,12 +8,13 @@ import org.grobid.core.exceptions.GrobidException;
 import org.grobid.core.layout.LayoutToken;
 import org.grobid.core.tokenization.TaggingTokenCluster;
 import org.grobid.core.tokenization.TaggingTokenClusteror;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.LayoutTokensUtil;
 import org.grobid.core.utilities.TextUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -54,10 +55,10 @@ class FigureParser extends AbstractParser {
     private Figure getExtractionResult(List<LayoutToken> tokenizations, String result) {
         TaggingTokenClusteror clusteror = new TaggingTokenClusteror(GrobidModels.FIGURE, result, tokenizations);
         List<TaggingTokenCluster> clusters = clusteror.cluster();
-        
+
         Figure figure = new Figure();
         figure.setLayoutTokens(tokenizations);
-        
+
         for (TaggingTokenCluster cluster : clusters) {
             if (cluster == null) {
                 continue;

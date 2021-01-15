@@ -4,13 +4,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 
 import org.grobid.core.data.BibDataSet;
 import org.grobid.core.engines.tagging.GenericTaggerUtils;
 import org.grobid.core.layout.Block;
 import org.grobid.core.layout.Cluster;
 import org.grobid.core.layout.LayoutToken;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.TextUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
 public class BasicStructureBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicStructureBuilder.class);
 
-	// note: these regular expressions will disappear as a new CRF model is now covering 
+	// note: these regular expressions will disappear as a new CRF model is now covering
 	// the overall document segmentation
     static public Pattern introduction =
             Pattern.compile("^\\b*(Introduction?|Einleitung|INTRODUCTION|Acknowledge?ments?|Acknowledge?ment?|Background?|Content?|Contents?|Motivations?|1\\.\\sPROBLEMS?|1\\.(\\n)?\\sIntroduction?|1\\.\\sINTRODUCTION|I\\.(\\s)+Introduction|1\\.\\sProblems?|I\\.\\sEinleitung?|1\\.\\sEinleitung?|1\\sEinleitung?|1\\sIntroduction?)",
@@ -67,7 +68,7 @@ public class BasicStructureBuilder {
     /**
      * Filter out line numbering possibly present in the document. This can be frequent for
      * document in a review/submission format and degrades strongly the machine learning
-     * extraction results. 
+     * extraction results.
 	 *
 	 * -> Not used !
      *
@@ -186,7 +187,7 @@ public class BasicStructureBuilder {
     /**
      * Cluster the blocks following the font, style and size aspects
      *
-	 * -> not used at this stage, but could be an interesting feature in the full text model in the future 
+	 * -> not used at this stage, but could be an interesting feature in the full text model in the future
 	 *
      * @param b   integer
      * @param doc a document
@@ -232,8 +233,8 @@ public class BasicStructureBuilder {
             doc.getClusters().add(cluster);
         }
 
-    }	
-	
+    }
+
 
     static public Document generalResultSegmentation(Document doc, String labeledResult, List<LayoutToken> documentTokens) {
         List<Pair<String, String>> labeledTokens = GenericTaggerUtils.getTokensAndLabels(labeledResult);
@@ -250,15 +251,15 @@ public class BasicStructureBuilder {
 		}*/
 
         List<Block> docBlocks = doc.getBlocks();
-		int indexLine = 0;		
+		int indexLine = 0;
         int blockIndex = 0;
-        int p = 0; // position in the labeled result 
-		int currentLineEndPos = 0; // position in the global doc. tokenization of the last 
+        int p = 0; // position in the labeled result
+		int currentLineEndPos = 0; // position in the global doc. tokenization of the last
 								// token of the current line
-		int currentLineStartPos = 0; // position in the global doc. 
+		int currentLineStartPos = 0; // position in the global doc.
 									 // tokenization of the first token of the current line
 		String line = null;
-		
+
 		//DocumentPointer pointerA = DocumentPointer.START_DOCUMENT_POINTER;
 		// the default first block might not contain tokens but only bitmap - in this case we move
 		// to the first block containing some LayoutToken objects
@@ -269,7 +270,7 @@ public class BasicStructureBuilder {
             blockIndex++;
         }
         DocumentPointer pointerA = new DocumentPointer(doc, blockIndex, docBlocks.get(blockIndex).getStartToken());
-		
+
         DocumentPointer currentPointer = null;
         DocumentPointer lastPointer = null;
 
@@ -290,16 +291,16 @@ public class BasicStructureBuilder {
         // no copying of lists happens because of this, so it's ok to concatenate
         String ignoredLabel = "@IGNORED_LABEL@";
         for (Pair<String, String> labeledTokenPair :
-                Iterables.concat(labeledTokens, 
+                Iterables.concat(labeledTokens,
 					Collections.singleton(Pair.of("IgnoredToken", ignoredLabel)))) {
             if (labeledTokenPair == null) {
                 p++;
                 continue;
             }
 
-			// as we process the document segmentation line by line, we don't use the usual 
-			// tokenization to rebuild the text flow, but we get each line again from the 
-			// text stored in the document blocks (similarly as when generating the features) 
+			// as we process the document segmentation line by line, we don't use the usual
+			// tokenization to rebuild the text flow, but we get each line again from the
+			// text stored in the document blocks (similarly as when generating the features)
 			line = null;
 			while( (line == null) && (blockIndex < docBlocks.size()) ) {
 				Block block = docBlocks.get(blockIndex);
@@ -334,7 +335,7 @@ public class BasicStructureBuilder {
 
 					if (currentLineStartPos > lastTokenInd)
 						continue;
-					
+
 					// adjust the start token position in documentTokens to this non trivial line
 					// first skip possible space characters and tabs at the beginning of the line
 					while( (documentTokens.get(currentLineStartPos).t().equals(" ") ||
@@ -353,7 +354,7 @@ public class BasicStructureBuilder {
 								 	&& (currentLineStartPos != lastTokenInd)) {
 								 	currentLineStartPos++;
 								 }
-								 if ((currentLineStartPos != lastTokenInd) && 
+								 if ((currentLineStartPos != lastTokenInd) &&
 								 	labeledTokenPair.getLeft().startsWith(documentTokens.get(currentLineStartPos).getText())) {
 									 break;
 								 }
@@ -376,7 +377,7 @@ public class BasicStructureBuilder {
 			}
             curLabel = labeledTokenPair.getRight();
             curPlainLabel = GenericTaggerUtils.getPlainLabel(curLabel);
-			
+
 			/*System.out.println("-------------------------------");
 			System.out.println("block: " + blockIndex);
 			System.out.println("line: " + line);
@@ -384,12 +385,12 @@ public class BasicStructureBuilder {
 			System.out.println("curPlainLabel: " + curPlainLabel);
 			System.out.println("lastPlainLabel: " + lastPlainLabel);
 			if ((currentLineStartPos < lastTokenInd) && (currentLineStartPos != -1))
-				System.out.println("currentLineStartPos: " + currentLineStartPos + 
+				System.out.println("currentLineStartPos: " + currentLineStartPos +
 											" (" + documentTokens.get(currentLineStartPos) + ")");
 			if ((currentLineEndPos < lastTokenInd) && (currentLineEndPos != -1))
-				System.out.println("currentLineEndPos: " + currentLineEndPos + 
+				System.out.println("currentLineEndPos: " + currentLineEndPos +
 											" (" + documentTokens.get(currentLineEndPos) + ")");*/
-			
+
 			if (blockIndex == docBlocks.size()) {
 				break;
 			}
@@ -397,7 +398,7 @@ public class BasicStructureBuilder {
             currentPointer = new DocumentPointer(doc, blockIndex, currentLineEndPos);
 
             // either a new entity starts or a new beginning of the same type of entity
-			if ((!curPlainLabel.equals(lastPlainLabel)) && (lastPlainLabel != null)) {	
+			if ((!curPlainLabel.equals(lastPlainLabel)) && (lastPlainLabel != null)) {
 				if ( (pointerA.getTokenDocPos() <= lastPointer.getTokenDocPos()) &&
 				   	(pointerA.getTokenDocPos() != -1) ) {
 					labeledBlocks.put(lastPlainLabel, new DocumentPiece(pointerA, lastPointer));
@@ -412,11 +413,11 @@ public class BasicStructureBuilder {
 			currentLineStartPos = currentLineEndPos+2; // one shift for the EOL, one for the next line
             p++;
         }
-		
+
 		if (blockIndex == docBlocks.size()) {
 			// the last labelled piece has still to be added
-			if ((!curPlainLabel.equals(lastPlainLabel)) && (lastPlainLabel != null)) {	
-				if ( (pointerA.getTokenDocPos() <= lastPointer.getTokenDocPos()) && 
+			if ((!curPlainLabel.equals(lastPlainLabel)) && (lastPlainLabel != null)) {
+				if ( (pointerA.getTokenDocPos() <= lastPointer.getTokenDocPos()) &&
 					(pointerA.getTokenDocPos() != -1) ) {
 					labeledBlocks.put(lastPlainLabel, new DocumentPiece(pointerA, lastPointer));
 					//System.out.println("add segment for: " + lastPlainLabel + ", until " + (currentLineStartPos-2));

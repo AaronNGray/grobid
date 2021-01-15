@@ -1,8 +1,8 @@
 package org.grobid.core.engines;
 
 import com.google.common.base.Splitter;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.ImmutablePair;
+//import org.apache.commons.lang3.tuple.Pair;
 import org.grobid.core.GrobidModels;
 import org.grobid.core.data.BiblioItem;
 import org.grobid.core.data.Date;
@@ -31,6 +31,7 @@ import org.grobid.core.layout.PDFAnnotation;
 import org.grobid.core.tokenization.LabeledTokensContainer;
 import org.grobid.core.tokenization.TaggingTokenCluster;
 import org.grobid.core.tokenization.TaggingTokenClusteror;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.Consolidation;
 import org.grobid.core.utilities.GrobidProperties;
 import org.grobid.core.utilities.LanguageUtilities;
@@ -102,7 +103,7 @@ public class HeaderParser extends AbstractParser {
             Document doc = parsers.getSegmentationParser().processing(documentSource, config);
 
             String tei = processingHeaderSection(config, doc, resHeader, true);
-            return new ImmutablePair<String, Document>(tei, doc);
+            return new Pair<String, Document>(tei, doc); // HACK ImmutablePair
         } finally {
             if (documentSource != null) {
                 documentSource.close(true, true, true);

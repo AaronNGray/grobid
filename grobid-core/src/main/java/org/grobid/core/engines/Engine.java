@@ -17,7 +17,7 @@ package org.grobid.core.engines;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.lang3.tuple.Pair;
 
 import org.grobid.core.data.Affiliation;
 import org.grobid.core.data.BibDataSet;
@@ -35,6 +35,7 @@ import org.grobid.core.exceptions.GrobidResourceException;
 import org.grobid.core.factory.GrobidFactory;
 import org.grobid.core.factory.GrobidPoolingFactory;
 import org.grobid.core.lang.Language;
+import org.grobid.core.utilities.Pair;
 import org.grobid.core.utilities.Consolidation;
 import org.grobid.core.utilities.GrobidProperties;
 import org.grobid.core.utilities.LanguageUtilities;
@@ -444,7 +445,7 @@ public class Engine implements Closeable {
      */
     public String processFulltextDocument /*fullTextToTEI*/(File inputFile,
                                 GrobidAnalysisConfig config) throws Exception {
-        return fullTextToTEIDoc(inputFile, config).getTei();
+        return fullTextToTEIDoc(inputFile, config).toTEI(config);
     }
 
     public Document fullTextToTEIDoc(File inputFile,
