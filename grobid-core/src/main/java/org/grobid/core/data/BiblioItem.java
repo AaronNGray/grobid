@@ -2280,7 +2280,7 @@ public class BiblioItem {
             jsonBibtex.add("author", collaboration);
         } else {
             if (fullAuthors != null) {
-                List<String> values = fullAuthors.stream()
+                List<String> authors = fullAuthors.stream()
                     .filter(person -> person != null)
                     .map(person -> {
                         String author = person.getLastName();
@@ -2293,8 +2293,10 @@ public class BiblioItem {
                     .collect(Collectors.toList());
 
                 JsonArrayBuilder builder = Json.createArrayBuilder();
-                for (String value : values) {
-                    builder.add(value);
+                for (String author : authors) {
+                    if (author != null) {
+                        builder.add(author);
+                    }
                 }
                 jsonBibtex.add("authors", builder.build());
             } else if (this.authors != null) {
