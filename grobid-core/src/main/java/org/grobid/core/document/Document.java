@@ -19,6 +19,8 @@ import org.grobid.core.analyzers.GrobidAnalyzer;
 import org.grobid.core.data.*;
 import org.grobid.core.engines.AbstractParser;
 import org.grobid.core.engines.Engine;
+import org.grobid.core.engines.EngineParsers;
+import org.grobid.core.engines.FullTextParser;
 import org.grobid.core.engines.config.GrobidAnalysisConfig;
 import org.grobid.core.engines.counters.FigureCounters;
 import org.grobid.core.engines.counters.TableRejectionCounters;
@@ -60,16 +62,24 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1607,25 +1617,24 @@ public class Document extends AbstractParser implements Serializable { // HACK
             return null;
         }
         List<BibDataSet> resCitations = getBibDataSets();
-        TEIFormatter teiFormatter = new TEIFormatter(this, null);
+        TEIFormatter teiFormatter = new TEIFormatter(this, new FullTextParser(new EngineParsers()));
         StringBuilder teiStringBuilder;
         try {
             teiStringBuilder = teiFormatter.toTEIHeader(resHeader, null, resCitations, config);
 
 			//System.out.println(rese);
             //int mode = config.getFulltextProcessingMode();
-			teiStringBuilder = teiFormatter.toTEIBody(teiStringBuilder, resultBody, resHeader, resCitations,
-					layoutTokenization, figures, tables, equations, this, config);
+			teiStringBuilder = teiFormatter.toTEIBody(teiStringBuilder, this, config);
 
 			teiStringBuilder.append("\t\t<back>\n");
 
 			// acknowledgement is in the back
 			SortedSet<DocumentPiece> documentAcknowledgementParts =
 				getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
-/*
-			Pair<String, LayoutTokenization> doc.featSeg =
-				getBodyTextFeatured(this, documentAcknowledgementParts);
-*/
+
+			Pair<String, LayoutTokenization> featSeg =
+				FullTextParser.getBodyTextFeatured(this, documentAcknowledgementParts);
+
 			List<LayoutToken> tokenizationsAcknowledgement;
 			if (featSeg != null) {
 				// if doc.featSeg is null, it usually means that no body segment is found in the
@@ -1661,5 +1670,37 @@ public class Document extends AbstractParser implements Serializable { // HACK
 //						XmlBuilderUtils.fromString(tei.toString())
 //				)
 //		);
+	}
+
+	public String toJSON(GrobidAnalysisConfig config) {
+	    if (getBlocks() == null) {
+	        return null;
+	    }
+
+	    List<BibDataSet> resCitations = getBibDataSets();
+
+		JsonObjectBuilder jsonBibtex = Json.createObjectBuilder();
+
+        StringWriter stringWriter = new StringWriter();
+
+		jsonBibtex.add("citation", resHeader.toBibJSON(config));
+
+		JsonArrayBuilder jsonCitations = Json.createArrayBuilder();
+
+		for (BibDataSet citation : resCitations) {
+		    jsonCitations.add(citation.getResBib().toBibJSON(config));
+		}
+		jsonBibtex.add("references", jsonCitations);
+
+		Map<String, Object> properties = new HashMap<>(1);
+            properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+		JsonWriter jsonWriter = writerFactory.createWriter(stringWriter);
+
+		jsonWriter.writeObject(jsonBibtex.build());
+		jsonWriter.close();
+
+		return stringWriter.toString();
 	}
 }

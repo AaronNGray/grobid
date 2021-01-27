@@ -111,6 +111,7 @@ subprojects {
         implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
         implementation "com.fasterxml.jackson.module:jackson-module-afterburner:2.10.1"
 
+        implementation "org.glassfish:javax.json:1.1.4"
         implementation 'javax.json:javax.json-api:1.1.4'
     }
 

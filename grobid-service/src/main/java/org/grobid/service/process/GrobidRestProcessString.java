@@ -279,7 +279,7 @@ public class GrobidRestProcessString {
 							.build();
 			} else if (expectedResponseType == ExpectedResponseType.BIBJSON) {
 				response = Response.status(Status.OK)
-							.entity(biblioItem.toBibJSON("-1", config))
+							.entity(biblioItem.toBibJSON(config))
 							.header(HttpHeaders.CONTENT_TYPE, BibJSONMediaType.MEDIA_TYPE + "; charset=UTF-8")
 							.build();
 			} else {

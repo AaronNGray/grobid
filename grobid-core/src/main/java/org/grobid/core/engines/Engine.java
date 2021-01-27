@@ -448,6 +448,11 @@ public class Engine implements Closeable {
         return fullTextToTEIDoc(inputFile, config).toTEI(config);
     }
 
+    public String processFulltextDocumentToJSON(File inputFile,
+                                GrobidAnalysisConfig config) throws Exception {
+        return fullTextToTEIDoc(inputFile, config).toJSON(config);
+    }
+
     public Document fullTextToTEIDoc(File inputFile,
                                      GrobidAnalysisConfig config) throws Exception {
         FullTextParser fullTextParser = parsers.getFullTextParser();

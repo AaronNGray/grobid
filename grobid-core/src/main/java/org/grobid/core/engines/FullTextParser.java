@@ -2287,8 +2287,7 @@ public class FullTextParser extends AbstractParser {
 
 			//System.out.println(rese);
             //int mode = config.getFulltextProcessingMode();
-			tei = teiFormatter.toTEIBody(tei, doc.resultBody, doc.resHeader, resCitations,
-					doc.layoutTokenization, doc.figures, doc.tables, doc.equations, doc, config);
+			tei = teiFormatter.toTEIBody(tei, doc, config);
 
 			tei.append("\t\t<back>\n");
 

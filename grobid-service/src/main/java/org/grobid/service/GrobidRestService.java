@@ -197,6 +197,28 @@ public class GrobidRestService implements GrobidPaths {
 
     @Path(PATH_FULL_TEXT)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    public Response processFulltextDocumentToJSON_post(
+        @FormDataParam(INPUT) InputStream inputStream,
+        @DefaultValue("0") @FormDataParam(CONSOLIDATE_HEADER) String consolidateHeader,
+        @DefaultValue("0") @FormDataParam(CONSOLIDATE_CITATIONS) String consolidateCitations,
+        @DefaultValue("0") @FormDataParam(INCLUDE_RAW_AFFILIATIONS) String includeRawAffiliations,
+        @DefaultValue("0") @FormDataParam(INCLUDE_RAW_CITATIONS) String includeRawCitations,
+        @DefaultValue("-1") @FormDataParam("start") int startPage,
+        @DefaultValue("-1") @FormDataParam("end") int endPage,
+        @FormDataParam("generateIDs") String generateIDs,
+        @FormDataParam("segmentSentences") String segmentSentences,
+        @FormDataParam("teiCoordinates") List<FormDataBodyPart> coordinates) throws Exception {
+        return processFulltextToJSON(
+            inputStream, consolidateHeader, consolidateCitations,
+            includeRawAffiliations, includeRawCitations,
+            startPage, endPage, generateIDs, segmentSentences, coordinates
+        );
+    }
+
+    @Path(PATH_FULL_TEXT)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_XML)
     @PUT
     public Response processFulltextDocument(
@@ -237,6 +259,55 @@ public class GrobidRestService implements GrobidPaths {
         List<String> teiCoordinates = collectCoordinates(coordinates);
 
         return restProcessFiles.processFulltextDocument(
+            inputStream, consolHeader, consolCitations,
+            validateIncludeRawParam(includeRawAffiliations),
+            includeRaw,
+            startPage, endPage, generate, segment, teiCoordinates
+        );
+    }
+
+    @Path(PATH_FULL_TEXT)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @PUT
+    public Response processFulltextDocumentToJSON(
+        @FormDataParam(INPUT) InputStream inputStream,
+        @DefaultValue("0") @FormDataParam(CONSOLIDATE_HEADER) String consolidateHeader,
+        @DefaultValue("0") @FormDataParam(CONSOLIDATE_CITATIONS) String consolidateCitations,
+        @DefaultValue("0") @FormDataParam(INCLUDE_RAW_AFFILIATIONS) String includeRawAffiliations,
+        @DefaultValue("0") @FormDataParam(INCLUDE_RAW_CITATIONS) String includeRawCitations,
+        @DefaultValue("-1") @FormDataParam("start") int startPage,
+        @DefaultValue("-1") @FormDataParam("end") int endPage,
+        @FormDataParam("generateIDs") String generateIDs,
+        @FormDataParam("segmentSentences") String segmentSentences,
+        @FormDataParam("teiCoordinates") List<FormDataBodyPart> coordinates) throws Exception {
+        return processFulltextToJSON(
+            inputStream, consolidateHeader, consolidateCitations,
+            includeRawAffiliations, includeRawCitations,
+            startPage, endPage, generateIDs, segmentSentences, coordinates
+        );
+    }
+
+    private Response processFulltextToJSON(InputStream inputStream,
+                                     String consolidateHeader,
+                                     String consolidateCitations,
+                                     String includeRawAffiliations,
+                                     String includeRawCitations,
+                                     int startPage,
+                                     int endPage,
+                                     String generateIDs,
+                                     String segmentSentences,
+                                     List<FormDataBodyPart> coordinates
+    ) throws Exception {
+        int consolHeader = validateConsolidationParam(consolidateHeader);
+        int consolCitations = validateConsolidationParam(consolidateCitations);
+        boolean includeRaw = validateIncludeRawParam(includeRawCitations);
+        boolean generate = validateGenerateIdParam(generateIDs);
+        boolean segment = validateGenerateIdParam(segmentSentences);
+
+        List<String> teiCoordinates = collectCoordinates(coordinates);
+
+        return restProcessFiles.processFulltextDocumentToJSON(
             inputStream, consolHeader, consolCitations,
             validateIncludeRawParam(includeRawAffiliations),
             includeRaw,

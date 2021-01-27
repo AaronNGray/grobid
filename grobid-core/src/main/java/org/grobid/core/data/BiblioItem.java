@@ -2250,7 +2250,7 @@ public class BiblioItem {
      *
      * @param id                  the BibTeX ke to use
      */
-    public JsonObject toBibJSON(String id, GrobidAnalysisConfig config) {
+    public JsonObject toBibJSON(GrobidAnalysisConfig config) {
         String type;
         if (journal != null) {
             type = "article";

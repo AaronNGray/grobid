@@ -937,22 +937,15 @@ public class TEIFormatter {
      * like structured indexing and search.
      */
     public StringBuilder toTEIBody(StringBuilder buffer,
-                                   String result,
-                                   BiblioItem biblio,
-                                   List<BibDataSet> bds,
-                                   LayoutTokenization layoutTokenization,
-                                   List<Figure> figures,
-                                   List<Table> tables,
-                                   List<Equation> equations,
                                    Document doc,
                                    GrobidAnalysisConfig config) throws Exception {
-        if ((result == null) || (layoutTokenization == null) || (layoutTokenization.getTokenization() == null)) {
+        if ((doc.resultBody == null) || (doc.layoutTokenization == null) || (doc.layoutTokenization.getTokenization() == null)) {
             buffer.append("\t\t<body/>\n");
             return buffer;
         }
         buffer.append("\t\t<body>\n");
-        buffer = toTEITextPiece(buffer, result, biblio, bds, true,
-                layoutTokenization, figures, tables, equations, doc, config);
+        buffer = toTEITextPiece(buffer, doc.resultBody, doc.resHeader, doc.bibDataSets, true,
+                doc.layoutTokenization, doc.figures, doc.tables, doc.equations, doc, config);
 
         // notes are still in the body
         buffer = toTEINote(buffer, doc, config);
@@ -1569,7 +1562,7 @@ System.out.println(theSentences.toString());
         return result;
     }
 
-    private org.grobid.core.utilities.Pair<String, String> getSectionNumber(String text) {
+    private Pair<String, String> getSectionNumber(String text) {
         Matcher m1 = BasicStructureBuilder.headerNumbering1.matcher(text);
         Matcher m2 = BasicStructureBuilder.headerNumbering2.matcher(text);
         Matcher m3 = BasicStructureBuilder.headerNumbering3.matcher(text);
