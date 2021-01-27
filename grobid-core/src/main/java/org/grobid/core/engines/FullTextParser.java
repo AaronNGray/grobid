@@ -106,22 +106,59 @@ public class FullTextParser extends AbstractParser {
         tmpPath = GrobidProperties.getTempPath();
     }
 
+    /**
+     * processing
+     *
+     * @param File inputPdf
+     * @param GrobidAnalysisConfig config
+     * @return the document object
+     */
 	public Document processing(File inputPdf,
 							   GrobidAnalysisConfig config) throws Exception {
 		DocumentSource documentSource =
 			DocumentSource.fromPdf(inputPdf, config.getStartPage(), config.getEndPage(),
 				config.getPdfAssetPath() != null, true, false);
+
 		return processing(documentSource, config);
+	}
+
+	/**
+	 * processing
+	 *
+	 * @param String text
+	 * @param GrobidAnalysisConfig config
+	 * @return the document object
+	 */
+	public Document processing(String text,
+                               GrobidAnalysisConfig config) {
+		// general segmentation
+	    Document doc = parsers.getSegmentationParser().processing(text);
+
+	    return processing(doc, config);
+	}
+
+	/**
+	 * processing
+	 *
+	 * @param DocumentSource documentSource
+	 * @param GrobidAnalysisConfig config
+	 * @return the document object
+	 */
+	public Document processing(DocumentSource documentSource,
+	                           GrobidAnalysisConfig config) {
+	    Document doc = parsers.getSegmentationParser().processing(documentSource, config);
+
+	    return processing(doc, config);
 	}
 
 	/**
      * Machine-learning recognition of the complete full text structures.
      *
-     * @param documentSource input
-     * @param config config
-     * @return the document object with built TEI
+     * @param document doc
+     * @param GrobidAnalysisConfig config
+     * @return the document object
      */
-    public Document processing(DocumentSource documentSource,
+    public Document processing(Document doc,
                                GrobidAnalysisConfig config) {
         if (tmpPath == null) {
             throw new GrobidResourceException("Cannot process pdf file, because temp path is null.");
@@ -131,8 +168,6 @@ public class FullTextParser extends AbstractParser {
                     tmpPath.getAbsolutePath() + "' does not exists.");
         }
         try {
-			// general segmentation
-			Document doc = parsers.getSegmentationParser().processing(documentSource, config);
 			SortedSet<DocumentPiece> documentBodyParts = doc.getDocumentPart(SegmentationLabels.BODY);
 
             // header processing
