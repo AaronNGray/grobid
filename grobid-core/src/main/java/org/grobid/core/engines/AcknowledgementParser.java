@@ -37,8 +37,8 @@ public class AcknowledgementParser extends AbstractParser {
         	String acknowledgementText = featSeg.getLeft();
         	tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
         	if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
-        		reseAcknowledgement = label(acknowledgementText); // HACK
+        		resultAcknowledgement = label(acknowledgementText); // HACK
         }
-        return new Pair<String, List<LayoutToken>>(reseAcknowledgement, tokenizationsAcknowledgement);
+        return new Pair<String, List<LayoutToken>>(resultAcknowledgement, tokenizationsAcknowledgement);
     }
 }

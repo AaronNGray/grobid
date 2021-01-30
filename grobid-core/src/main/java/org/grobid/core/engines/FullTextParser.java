@@ -175,7 +175,7 @@ public class FullTextParser extends AbstractParser {
 //            Pair<String, LayoutTokenization> featSeg = null;
 
             // using the segmentation model to identify the header zones
-            parsers.getHeaderParser().processingHeaderSection(config, doc, null, /*resHeader, */ false);
+            parsers.getHeaderParser().processingHeaderSection(config, doc, null, false);
 
             // The commented part below makes use of the PDF embedded metadata (the so-called XMP) if available
             // as fall back to set author and title if they have not been found.
@@ -187,6 +187,7 @@ public class FullTextParser extends AbstractParser {
             /*if (isBlank(doc.resHeader.getTitle()) || isBlank(doc.resHeader.getAuthors()) || CollectionUtils.isEmpty(doc.resHeader.getFullAuthors())) {
                 // try to exploit PDF embedded metadata (the so-called XMP) if we are still without title/authors
                 // this is risky as those metadata are highly unreliable, but as last chance, why not :)
+
                 Metadata metadata = doc.getMetadata();
                 if (metadata != null) {
                     boolean titleUpdated = false;
@@ -237,6 +238,7 @@ public class FullTextParser extends AbstractParser {
                 }
             }
 
+
             // citation processing
             // consolidation, if selected, is not done individually for each citation but
             // in a second stage for all citations which is much faster
@@ -268,26 +270,18 @@ public class FullTextParser extends AbstractParser {
             doc.setBibDataSets(resCitations);
 
 			// full text processing
-			doc.featSeg = getBodyTextFeatured(doc, documentBodyParts);
-/*
-			String resultBody = null;
-			LayoutTokenization layoutTokenization = null;
-			List<Figure> figures = null;
-			List<Table> tables = null;
-			List<Equation> equations = null;
-*/
-			if (doc.featSeg != null && isNotBlank(doc.featSeg.getLeft())) {
+			Pair<String, LayoutTokenization> featSeg = getBodyTextFeatured(doc, documentBodyParts);
+
+			if (featSeg != null && isNotBlank(featSeg.getLeft())) {
 				// if doc.featSeg is null, it usually means that no body segment is found in the
 				// document segmentation
-				String bodytext = doc.featSeg.getLeft();
-				doc.layoutTokenization = doc.featSeg.getRight();
-				//tokenizationsBody = doc.featSeg.getB().getTokenization();
-                //layoutTokensBody = doc.featSeg.getB().getLayoutTokens();
+				String bodytext = featSeg.getLeft();
+				doc.setLayoutTokenization(featSeg.getRight());
 
-                doc.resultBody = label(bodytext);
+                doc.setResultBody(label(bodytext));
 
 				// we apply now the figure and table models based on the fulltext labeled output
-				doc.figures = processFigures(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
+				doc.figures = processFigures(doc.getResultBody(), doc.getLayoutTokenization().getTokenization(), doc);
                 // further parse the caption
                 for(Figure figure : doc.figures) {
                     if (CollectionUtils.isNotEmpty(figure.getCaptionLayoutTokens()) ) {
@@ -297,7 +291,7 @@ public class FullTextParser extends AbstractParser {
                     }
                 }
 
-				doc.tables = processTables(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
+				doc.tables = processTables(doc.getResultBody(), doc.getLayoutTokenization().getTokenization(), doc);
                 // further parse the caption
                 for(Table table : doc.tables) {
                     if ( CollectionUtils.isNotEmpty(table.getCaptionLayoutTokens()) ) {
@@ -312,41 +306,36 @@ public class FullTextParser extends AbstractParser {
                     }
                 }
 
-				doc.equations = processEquations(doc.resultBody, doc.layoutTokenization.getTokenization(), doc);
+				doc.equations = processEquations(doc.getResultBody(), doc.getLayoutTokenization().getTokenization(), doc);
 			} else {
 				LOGGER.debug("Fulltext model: The featured body is empty");
 			}
 
-
-
 			// possible annexes (view as a piece of full text similar to the body)
 			documentBodyParts = doc.getDocumentPart(SegmentationLabels.ANNEX);
-            doc.featSeg = getBodyTextFeatured(doc, documentBodyParts);
-//			String resultAnnex = null;
-			List<LayoutToken> tokenizationsBody2 = null;
-			if (doc.featSeg != null && isNotEmpty(trim(doc.featSeg.getLeft()))) {
+            featSeg = getBodyTextFeatured(doc, documentBodyParts);
+
+			if (featSeg != null && isNotEmpty(trim(featSeg.getLeft()))) {
 				// if doc.featSeg is null, it usually means that no body segment is found in the
 				// document segmentation
-				String bodytext = doc.featSeg.getLeft();
-				doc.tokenizationsAnnex = doc.featSeg.getRight().getTokenization();
-				doc.resultAnnex = label(bodytext);
-				//System.out.println(rese);
+				String bodytext = featSeg.getLeft();
+				doc.setTokenizationsAnnex(featSeg.getRight().getTokenization());
+				doc.setResultAnnex(label(bodytext));
 			}
 
 			// acknowledgement is in the back
 			SortedSet<DocumentPiece> documentAcknowledgementParts =
 				doc.getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
 
-			Pair<String, LayoutTokenization> featSeg =
-				getBodyTextFeatured(doc, documentAcknowledgementParts);
+			featSeg = getBodyTextFeatured(doc, documentAcknowledgementParts);
 
 			if (featSeg != null) {
 				// if doc.featSeg is null, it usually means that no body segment is found in the
 				// document segmentation
 				String acknowledgementText = featSeg.getLeft();
-				doc.tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
+				doc.setTokenizationsAcknowledgement(featSeg.getRight().getTokenization());
 				if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
-					doc.reseAcknowledgement = label(acknowledgementText);
+					doc.setResultAcknowledgement(label(acknowledgementText));
 			}
 
             // final combination

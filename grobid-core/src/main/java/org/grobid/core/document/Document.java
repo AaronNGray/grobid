@@ -184,19 +184,19 @@ public class Document implements Serializable { // HACK
 
     protected double byteSize = 0;
 
-    public transient String resultBody = null;
-    public transient String resultAnnex = null;
-    public transient LayoutTokenization layoutTokenization = null;
-    public transient List<LayoutToken> tokenizationsAnnex = null;
+    protected transient String resultBody = null;
+    protected transient String resultAnnex = null;
+    protected transient String resultAcknowledgement = null;
 
-    public transient String resultAcknowledgement = null;
-    public transient List<LayoutToken> tokenizationsAcknowledgement = null;
+    protected transient LayoutTokenization layoutTokenization = null;
+    protected transient List<LayoutToken> tokenizationsAnnex = null;
+    protected transient List<LayoutToken> tokenizationsAcknowledgement = null;
 
 //    public transient List<Figure> figures = null;
 //    public List<Table> tables = null;
 //    public List<Equation> equations = null;
 
-    public transient Pair<String, LayoutTokenization> featSeg = null;
+//    protected transient Pair<String, LayoutTokenization> featSeg = null;
 
     //
 
@@ -237,13 +237,12 @@ public class Document implements Serializable { // HACK
         return resHeader;
     }
 
-    public String getBody() {
+    public String getResultBody() {
         return resultBody;
     }
-    public void setBody(String body) {
+    public void setResultBody(String body) {
         resultBody = body;
     }
-
     public String getResultAnnex() {
         return resultAnnex;
     }
