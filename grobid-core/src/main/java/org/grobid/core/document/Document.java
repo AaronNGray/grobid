@@ -99,7 +99,7 @@ import java.util.stream.Collectors;
  * @author Patrice Lopez
  */
 
-public class Document extends AbstractParser implements Serializable { // HACK
+public class Document implements Serializable { // HACK
 
     public static final long serialVersionUID = 1L;
 
@@ -129,7 +129,7 @@ public class Document extends AbstractParser implements Serializable { // HACK
 
     // list of bibliographical references with context
     protected transient Map<String, BibDataSet> teiIdToBibDataSets = null;
-    protected transient List<BibDataSet> bibDataSets = null;
+    public transient List<BibDataSet> bibDataSets = null;
 
     // header of the document - if extracted and processed
     public transient BiblioItem resHeader = null;
@@ -189,6 +189,9 @@ public class Document extends AbstractParser implements Serializable { // HACK
     public transient LayoutTokenization layoutTokenization = null;
     public transient List<LayoutToken> tokenizationsAnnex = null;
 
+    public transient String resultAcknowledgement = null;
+    public transient List<LayoutToken> tokenizationsAcknowledgement = null;
+
 //    public transient List<Figure> figures = null;
 //    public List<Table> tables = null;
 //    public List<Equation> equations = null;
@@ -198,7 +201,6 @@ public class Document extends AbstractParser implements Serializable { // HACK
     //
 
     public Document(DocumentSource documentSource) {
-        super(GrobidModels.FULLTEXT);
         this.documentSource = documentSource;
         setPathXML(documentSource.getXmlFile());
         this.byteSize = documentSource.getByteSize();
@@ -206,7 +208,6 @@ public class Document extends AbstractParser implements Serializable { // HACK
     }
 
     protected Document() {
-        super(GrobidModels.FULLTEXT);
         this.documentSource = null;
     }
 
@@ -234,6 +235,44 @@ public class Document extends AbstractParser implements Serializable { // HACK
 
     public BiblioItem getResHeader() {
         return resHeader;
+    }
+
+    public String getBody() {
+        return resultBody;
+    }
+    public void setBody(String body) {
+        resultBody = body;
+    }
+
+    public String getResultAnnex() {
+        return resultAnnex;
+    }
+    public void setResultAnnex(String annex) {
+        resultAnnex = annex;
+    }
+    public LayoutTokenization getLayoutTokenization() {
+        return layoutTokenization;
+    }
+    public void setLayoutTokenization(LayoutTokenization lt) {
+        layoutTokenization = lt;
+    }
+    public List<LayoutToken> getTokenizationsAnnex() {
+        return tokenizationsAnnex;
+    }
+    public void setTokenizationsAnnex(List<LayoutToken> ta) {
+        tokenizationsAnnex = ta;
+    }
+    public String getResultAcknowledgement() {
+        return resultAcknowledgement;
+    }
+    public void setResultAcknowledgement(String ra) {
+        resultAcknowledgement = ra;
+    }
+    public List<LayoutToken> getTokenizationsAcknowledgement() {
+        return tokenizationsAcknowledgement;
+    }
+    public void setTokenizationsAcknowledgement(List<LayoutToken> ta) {
+        tokenizationsAcknowledgement = ta;
     }
 
     public List<Block> getBlocks() {
@@ -1622,31 +1661,15 @@ public class Document extends AbstractParser implements Serializable { // HACK
         try {
             teiStringBuilder = teiFormatter.toTEIHeader(resHeader, null, resCitations, config);
 
-			//System.out.println(rese);
             //int mode = config.getFulltextProcessingMode();
 			teiStringBuilder = teiFormatter.toTEIBody(teiStringBuilder, this, config);
 
 			teiStringBuilder.append("\t\t<back>\n");
 
-			// acknowledgement is in the back
-			SortedSet<DocumentPiece> documentAcknowledgementParts =
-				getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
-
-			Pair<String, LayoutTokenization> featSeg =
-				FullTextParser.getBodyTextFeatured(this, documentAcknowledgementParts);
-
-			List<LayoutToken> tokenizationsAcknowledgement;
-			if (featSeg != null) {
-				// if doc.featSeg is null, it usually means that no body segment is found in the
-				// document segmentation
-				String acknowledgementText = featSeg.getLeft();
-				tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
-				String reseAcknowledgement = null;
-				if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
-					reseAcknowledgement = label(acknowledgementText); // HACK
-				teiStringBuilder = teiFormatter.toTEIAcknowledgement(teiStringBuilder, reseAcknowledgement,
-					tokenizationsAcknowledgement, resCitations, config);
-			}
+            if (resultAcknowledgement != null && tokenizationsAcknowledgement != null) {
+    			teiStringBuilder = teiFormatter.toTEIAcknowledgement(teiStringBuilder, resultAcknowledgement,
+    				tokenizationsAcknowledgement, resCitations, config);
+            }
 
 			teiStringBuilder = teiFormatter.toTEIAnnex(teiStringBuilder, resultAnnex, resHeader, resCitations,
 				tokenizationsAnnex, this, config);

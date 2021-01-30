@@ -317,6 +317,8 @@ public class FullTextParser extends AbstractParser {
 				LOGGER.debug("Fulltext model: The featured body is empty");
 			}
 
+
+
 			// possible annexes (view as a piece of full text similar to the body)
 			documentBodyParts = doc.getDocumentPart(SegmentationLabels.ANNEX);
             doc.featSeg = getBodyTextFeatured(doc, documentBodyParts);
@@ -329,6 +331,22 @@ public class FullTextParser extends AbstractParser {
 				doc.tokenizationsAnnex = doc.featSeg.getRight().getTokenization();
 				doc.resultAnnex = label(bodytext);
 				//System.out.println(rese);
+			}
+
+			// acknowledgement is in the back
+			SortedSet<DocumentPiece> documentAcknowledgementParts =
+				doc.getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
+
+			Pair<String, LayoutTokenization> featSeg =
+				getBodyTextFeatured(doc, documentAcknowledgementParts);
+
+			if (featSeg != null) {
+				// if doc.featSeg is null, it usually means that no body segment is found in the
+				// document segmentation
+				String acknowledgementText = featSeg.getLeft();
+				doc.tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
+				if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
+					doc.reseAcknowledgement = label(acknowledgementText);
 			}
 
             // final combination
@@ -2314,11 +2332,11 @@ public class FullTextParser extends AbstractParser {
         if (doc.getBlocks() == null) {
             return;
         }
-        List<BibDataSet> resCitations = doc.getBibDataSets();
+//        List<BibDataSet> resCitations = doc.getBibDataSets();
         TEIFormatter teiFormatter = new TEIFormatter(doc, this);
         StringBuilder tei;
         try {
-            tei = teiFormatter.toTEIHeader(doc.resHeader, null, resCitations, config);
+            tei = teiFormatter.toTEIHeader(doc.resHeader, null, doc.getBibDataSets(), config);
 
 			//System.out.println(rese);
             //int mode = config.getFulltextProcessingMode();
@@ -2326,28 +2344,13 @@ public class FullTextParser extends AbstractParser {
 
 			tei.append("\t\t<back>\n");
 
-			// acknowledgement is in the back
-			SortedSet<DocumentPiece> documentAcknowledgementParts =
-				doc.getDocumentPart(SegmentationLabels.ACKNOWLEDGEMENT);
-			Pair<String, LayoutTokenization> featSeg =
-				getBodyTextFeatured(doc, documentAcknowledgementParts);
-			List<LayoutToken> tokenizationsAcknowledgement;
-			if (featSeg != null) {
-				// if featSeg is null, it usually means that no body segment is found in the
-				// document segmentation
-				String acknowledgementText = featSeg.getLeft();
-				tokenizationsAcknowledgement = featSeg.getRight().getTokenization();
-				String reseAcknowledgement = null;
-				if ( (acknowledgementText != null) && (acknowledgementText.length() >0) )
-					reseAcknowledgement = label(acknowledgementText);
-				tei = teiFormatter.toTEIAcknowledgement(tei, reseAcknowledgement,
-					tokenizationsAcknowledgement, resCitations, config);
-			}
+			tei = teiFormatter.toTEIAcknowledgement(tei, doc.getResultAcknowledgement(),
+				doc.getTokenizationsAcknowledgement(), doc.getBibDataSets(), config);
 
-			tei = teiFormatter.toTEIAnnex(tei, doc.resultAnnex, doc.resHeader, resCitations,
-				doc.tokenizationsAnnex, doc, config);
+			tei = teiFormatter.toTEIAnnex(tei, doc.getResultAnnex(), doc.getResHeader(), doc.getBibDataSets(),
+				doc.getTokenizationsAnnex(), doc, config);
 
-			tei = teiFormatter.toTEIReferences(tei, resCitations, config);
+			tei = teiFormatter.toTEIReferences(tei, doc.getBibDataSets(), config);
             doc.calculateTeiIdToBibDataSets();
 
             tei.append("\t\t</back>\n");
