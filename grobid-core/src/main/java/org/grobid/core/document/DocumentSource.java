@@ -83,7 +83,11 @@ public class DocumentSource {
         pdfToXml.append(
                 GrobidProperties.isContextExecutionServer() ? File.separator + "pdfalto_server" : File.separator + "pdfalto");
 
-        pdfToXml.append(" -fullFontName -noLineNumbers");
+        pdfToXml.append(" -fullFontName");
+
+        if (!SystemUtils.IS_OS_WINDOWS) {
+            pdfToXml.append(" -noLineNumbers");
+        }
 
         if (!withImage) {
             pdfToXml.append(" -noImage ");
@@ -144,8 +148,10 @@ public class DocumentSource {
             cmd.add(pdfPath.getAbsolutePath());
             cmd.add(tmpPathXML.getAbsolutePath());
             if (GrobidProperties.isContextExecutionServer()) {
-                cmd.add("--timeout");
-                cmd.add(String.valueOf(GrobidProperties.getPdfaltoTimeoutS()));
+                if (!SystemUtils.IS_OS_WINDOWS) {
+                    cmd.add("--timeout");
+                    cmd.add(String.valueOf(GrobidProperties.getPdfaltoTimeoutS()));
+                }
                 tmpPathXML = processPdfaltoServerMode(pdfPath, tmpPathXML, cmd);
             } else {
                 if (!SystemUtils.IS_OS_WINDOWS && !SystemUtils.IS_OS_MAC) {
