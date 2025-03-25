@@ -1416,6 +1416,10 @@ public class Lexicon {
             OffsetPosition position = new OffsetPosition();
             position.start = startPos;
             position.end = endPos;
+            if (destination != null
+                && StringUtils.length(destination) < LayoutTokensUtil.toText(urlTokens).substring(position.start, position.end).length()) {
+                destination = null;
+            }
             resultPositions.add(Pair.of(position, destination));
         }
         return resultPositions;
