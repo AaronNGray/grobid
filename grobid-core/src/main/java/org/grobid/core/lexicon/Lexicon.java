@@ -1416,10 +1416,15 @@ public class Lexicon {
             OffsetPosition position = new OffsetPosition();
             position.start = startPos;
             position.end = endPos;
-            if (destination != null
-                && StringUtils.length(destination) < LayoutTokensUtil.toText(layoutTokens).substring(position.start, position.end).length()) {
-                destination = null;
-            }
+            String cleanUrl = StringUtils.strip(LayoutTokensUtil.toText(layoutTokens)
+                .substring(position.start, position.end))
+                .replace("\n", "")
+                .replace(" ", "");
+
+//            if (destination != null
+//                && StringUtils.length(destination) < cleanUrl.length()) {
+//                destination = null;
+//            }
             resultPositions.add(Pair.of(position, destination));
         }
         return resultPositions;
