@@ -13,13 +13,13 @@
 # -------------------
 # build builder image
 # -------------------
-FROM eclipse-temurin:17-jdk-focal AS builder
+FROM ubuntu:plucky-20241213 AS builder
 
 USER root
 
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install unzip
+    apt-get -y --no-install-recommends install unzip openjdk-24-jdk
 
 WORKDIR /opt/grobid-source
 
@@ -51,7 +51,7 @@ RUN rm -rf grobid-home/models/*-BidLSTM_CRF*
 
 ENV GROBID_SERVICE_OPTS "-Djava.library.path=grobid-home/lib/lin-64:grobid-home/lib/lin-64/jep"
 
-RUN ./gradlew clean assemble --no-daemon  --info --stacktrace
+RUN gradlew clean assemble --no-daemon  --info --stacktrace
 
 WORKDIR /opt/grobid
 RUN unzip -o /opt/grobid-source/grobid-service/build/distributions/grobid-service-*.zip && \
@@ -63,11 +63,11 @@ RUN rm -rf grobid-source
 # -------------------
 # build runtime image
 # -------------------
-FROM eclipse-temurin:17-jre-focal
+FROM ubuntu:plucky-20241213
 
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install libxml2 libfontconfig && \
+    apt-get -y --no-install-recommends install libxml2 libfontconfig openjdk-24-jdk && \
     rm -rf /var/lib/apt/lists/*
 
 # Add Tini
