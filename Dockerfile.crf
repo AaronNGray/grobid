@@ -13,13 +13,13 @@
 # -------------------
 # build builder image
 # -------------------
-FROM eclipse-temurin:17-jdk-focal AS builder
+FROM eclipse-temurin:21-jdk-ubi9-minimal AS builder
 
 USER root
 
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install unzip
+RUN microdnf update
+RUN microdnf upgrade
+RUN microdnf install -y unzip findutils
 
 WORKDIR /opt/grobid-source
 
@@ -63,12 +63,12 @@ RUN rm -rf grobid-source
 # -------------------
 # build runtime image
 # -------------------
-FROM eclipse-temurin:17-jre-focal
+FROM eclipse-temurin:21.0.7_6-jdk-ubi9-minimal
 
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install libxml2 libfontconfig && \
-    rm -rf /var/lib/apt/lists/*
+RUN microdnf update
+RUN microdnf upgrade
+RUN microdnf install -y libxml2
+RUN microdnf install -y fontconfig
 
 # Add Tini
 ENV TINI_VERSION v0.19.0
