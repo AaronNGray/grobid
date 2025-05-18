@@ -13,13 +13,13 @@
 # -------------------
 # build builder image
 # -------------------
-FROM eclipse-temurin:17-jdk-focal AS builder
+FROM ubuntu:plucky AS builder
 
 USER root
 
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install unzip
+    apt-get -y --no-install-recommends install unzip openjdk-21-jdk
 
 WORKDIR /opt/grobid-source
 
@@ -63,11 +63,11 @@ RUN rm -rf grobid-source
 # -------------------
 # build runtime image
 # -------------------
-FROM eclipse-temurin:17-jre-focal
+FROM ubuntu:plucky
 
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get -y --no-install-recommends install libxml2 libfontconfig && \
+    apt-get -y --no-install-recommends install libxml2 libfontconfig openjdk-21-jre && \
     rm -rf /var/lib/apt/lists/*
 
 # Add Tini
