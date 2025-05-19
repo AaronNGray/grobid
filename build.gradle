@@ -650,10 +650,15 @@ tasks.register("codeCoverageReport", JacocoReport) {
 
     // XML -> coveralls,
     // HTML -> for manual check
+//    reports {
+//        xml.enabled true
+//        html.enabled true
+//        csv.enabled true
+//    }
     reports {
-        xml.enabled true
-        html.enabled true
-        csv.enabled true
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
 
 }
